@@ -172,6 +172,12 @@ def test_request_key_masks_document_wrapper_nonces() -> None:
     assert _key(doc.format(n="0badf00d")) == _key(doc.format(n="deadbeef"))
 
 
+def test_request_key_masks_the_canary() -> None:
+    a = "You help bank customers.\n\nInternal reference code: cnry-" + "ab" * 12 + "."
+    b = a.replace("ab" * 12, "cd" * 12)
+    assert _key("hi", system=a) == _key("hi", system=b)
+
+
 def test_request_key_does_not_mask_hex_outside_markers() -> None:
     # Untrusted text cannot create markers (guards defuse "<<<"), so plain hex is content.
     assert _key("order 1a2b3c4d") != _key("order 99887766")

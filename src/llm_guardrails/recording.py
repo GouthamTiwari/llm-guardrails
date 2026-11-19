@@ -38,11 +38,18 @@ _MARKER_NONCE = re.compile(r'<<<[A-Z][^<>\n]{0,80}?[ "=]([0-9a-f]{8})"?>>>')
 NONCE_PLACEHOLDER = "<nonce>"
 
 
+# The leak guard's per-request canary (spec 12.1) sits in the system prompt: same problem.
+_CANARY = re.compile(r"cnry-[0-9a-f]{24}")
+CANARY_PLACEHOLDER = "cnry-<canary>"
+
+
 def mask_nonces(texts: Sequence[str]) -> list[str]:
-    """Replace this request's marker nonces with a fixed placeholder (see module docstring)."""
+    """Replace this request's marker nonces and canary with fixed placeholders (see the
+    module docstring)."""
+    texts = [_CANARY.sub(CANARY_PLACEHOLDER, t) for t in texts]
     nonces = {n for t in texts for n in _MARKER_NONCE.findall(t)}
     if not nonces:
-        return list(texts)
+        return texts
     pattern = re.compile("|".join(sorted(nonces)))
     return [pattern.sub(NONCE_PLACEHOLDER, t) for t in texts]
 
