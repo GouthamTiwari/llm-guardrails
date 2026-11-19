@@ -1,0 +1,17 @@
+{
+  "model_id": "amazon.titan-embed-text-v2:0",
+  "dims": 1024,
+  "normalize": true,
+  "text": "normaliser scan text",
+  "created": "2026-11-19",
+  "files": {
+    "attack_corpus": {
+      "rows": 319,
+      "sha256": "98564a1502247f4fbedc2ca0d5e191eba3f5ad7728737afaaf10daa2fb997fba"
+    },
+    "benign_anchors": {
+      "rows": 249,
+      "sha256": "2e5bde6019213aa10de58e4d92347625ecc7fd8767d05cc06fd712baee18e6ae"
+    }
+  }
+}

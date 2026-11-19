@@ -1,3 +1,11 @@
 * text=auto
 .githooks/* text eol=lf
 *.sh text eol=lf
+# Data and rule files are fingerprinted (sha256) and compared across machines, so their
+# bytes must be identical on Windows, Linux and Mac: always LF, never converted to CRLF.
+*.jsonl text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.csv text eol=lf
+*.npy binary

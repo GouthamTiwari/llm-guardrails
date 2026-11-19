@@ -11,3 +11,4 @@ One line per merged task: date, task, summary. Details live in `docs/changelogs/
 - 2026-11-19 · 07 policy-guard · size limits first, denied actions on the scan text (obfuscation-proof), topic allow-list with Hindi/Hinglish keywords, tool-call gate for agents.
 - 2026-11-19 · 08 injection-rules · 48 multilingual rules (37 strong, 11 weak) each with must-match and must-not-match examples, rule scoring with obfuscation signals, speed-tested regexes; normaliser no longer folds URLs/emails.
 - 2026-11-19 · fix pacer-clock · Titan pacer used a 15.6 ms Windows clock and could fire early (flaky test, 5/40 short runs); now perf_counter (0/40).
+- 2026-11-19 · 09 attack-corpus · 319 attacks + 249 benign anchors (10 languages, reviewed), Titan vectors committed, layer-2 similarity with benign pull-down, fail-closed on embed errors; provisional thresholds from a dev sanity check (decision 4); spend $0.073.

@@ -1,0 +1,10 @@
+{
+  "reviewed_on": "2026-11-19",
+  "reviewer": "read in full before embedding: every generated attack and benign row",
+  "dropped": {
+    "atk080p": "Hinglish rewording reversed the meaning (says the AI has restrictions)",
+    "atk089p": "Tamil rewording lost the target ('system prompt' became 'computer help')",
+    "atk091p": "Marathi rewording says 'next' instead of 'previous' and uses a non-word",
+    "atk131h": "Hindi translation flipped 'don't ask me again' into 'don't forget to ask me again'"
+  }
+}
