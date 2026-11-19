@@ -244,10 +244,12 @@ class UnknownModelPrice(GuardrailsError):
 
 
 class SchemaValidationFailed(GuardrailsError):
-    def __init__(self, attempts: int, errors: list[str]) -> None:
+    def __init__(self, attempts: int, errors: list[str], trace: list[Any] | None = None) -> None:
         super().__init__(f"output still invalid after {attempts} attempt(s)")
         self.attempts = attempts
         self.errors = errors
+        # Per-attempt tokens, cost and error kinds, so a failure is still fully costed.
+        self.trace = trace or []
 
 
 class PolicyError(GuardrailsError):

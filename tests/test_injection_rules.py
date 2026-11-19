@@ -129,10 +129,24 @@ def _adversarial_text(n: int = 20_000) -> str:
     return " ".join(out)[:n]
 
 
+def _search_time(rule, n: int) -> float:
+    text, filler = _adversarial_text(n), "a" * n
+    best = float("inf")
+    for _ in range(3):  # best of 3: ignores a moment where the laptop was busy elsewhere
+        start = time.perf_counter()
+        rule.pattern.search(text)
+        rule.pattern.search(filler)
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
 @pytest.mark.parametrize("rule", RULES, ids=[r.id for r in RULES])
 def test_each_rule_is_fast_on_long_adversarial_input(rule) -> None:
-    text = _adversarial_text()
-    start = time.perf_counter()
-    rule.pattern.search(text)
-    rule.pattern.search("a" * 20_000)
-    assert time.perf_counter() - start < 0.05
+    """Guards against catastrophic backtracking, which takes seconds to minutes on long
+    input. Typical time is ~1-5 ms; the 0.5 s limit leaves room for a busy machine (a 50 ms
+    limit failed once under load) while still catching the real problem."""
+    t20 = _search_time(rule, 20_000)
+    assert t20 < 0.5
+    # The signature of backtracking is super-linear growth: doubling the input must not
+    # much more than double the time (+10 ms slack for timer noise).
+    assert _search_time(rule, 40_000) < 3 * t20 + 0.01
