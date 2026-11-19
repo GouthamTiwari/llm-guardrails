@@ -1,0 +1,73 @@
+# Example policy for a banking and tax assistant (used by the examples and the e2e eval).
+name: banking_tax
+version: 1
+
+limits:
+  max_input_chars: 8000
+  max_context_docs: 20
+  max_doc_chars: 20000
+  max_output_tokens: 1024
+
+topics:
+  mode: allow_list
+  min_keyword_hits: 1
+  allowed:
+    - name: banking
+      keywords: [bank, account, balance, deposit, loan, emi, interest, card, cheque, neft,
+                 rtgs, imps, upi, atm, branch, ifsc, savings, fixed deposit, fd, kyc,
+                 net-banking, netbanking, refund, charge, fee]
+    - name: gst_tax
+      keywords: [gst, gstin, gstr, tax, invoice, itc, input tax credit, return, filing,
+                 tds, tcs, income tax, pan, 26as, e-way bill, eway, hsn]
+    - name: rbi_regulation
+      keywords: [rbi, reserve bank, circular, master direction, regulation, guideline,
+                 repo rate, nbfc, compliance, kyc norms]
+    - name: account_support
+      keywords: [password, login, otp, mobile number, email, address, update, statement,
+                 dispute, complaint, ticket, help]
+
+denied_actions:
+  - '\bdrop\s+table\b'
+  - '\btruncate\s+table\b'
+  - '\brm\s+-rf\b'
+  - '\b(transfer|send|pay)\b.{0,40}\bwithout\b.{0,20}\b(confirm|confirmation|asking|approval|otp)\b'
+
+tools:
+  risky: [payments.transfer, db.execute]
+
+pii:
+  min_confidence: 0.6
+  entities:
+    AADHAAR:     {input: redact, output: redact}
+    PAN:         {input: redact, output: redact}
+    CREDIT_CARD: {input: block,  output: block}
+    PHONE_IN:    {input: redact, output: redact}
+    EMAIL:       {input: redact, output: redact}
+    UPI_ID:      {input: redact, output: redact}
+    GSTIN:       {input: allow,  output: allow}
+    IFSC:        {input: allow,  output: allow}
+  restore: [EMAIL, PHONE_IN]   # a support answer may need to say "we will call 98xxx..."
+
+injection:
+  use_embeddings: true
+  use_llm: true
+
+context:
+  on_injection: strip_line
+  llm_classifier: false
+
+schema:
+  max_retries: 2
+
+grounding:
+  enabled: true
+  mode: reject
+  entailment: optional
+  min_overlap: 0.5
+
+leak:
+  allowed_domains: [rbi.org.in, gst.gov.in, incometax.gov.in]
+  max_query_chars: 30
+
+timeouts_s: {}
+fail_mode: {}

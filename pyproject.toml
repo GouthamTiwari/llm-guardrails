@@ -50,6 +50,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 testpaths = ["tests"]
 addopts = "-m 'not live'"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "live: makes real (paid) Bedrock calls; run with -m live",
 ]
