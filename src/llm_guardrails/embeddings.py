@@ -59,7 +59,9 @@ class Pacer:
 
     def wait(self) -> None:
         with self._lock:
-            now = time.monotonic()
+            # perf_counter, not monotonic: on Windows monotonic ticks only every ~15.6 ms,
+            # which let calls through slightly early.
+            now = time.perf_counter()
             delay = self._next - now
             self._next = max(now, self._next) + self.interval
         if delay > 0:

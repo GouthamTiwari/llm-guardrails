@@ -76,10 +76,10 @@ async def test_empty_input_returns_empty_matrix(tmp_path) -> None:
 
 def test_pacer_spaces_calls() -> None:
     pacer = Pacer(rate=20)  # one call every 50 ms
-    start = time.monotonic()
+    start = time.perf_counter()
     for _ in range(4):
         pacer.wait()
-    assert time.monotonic() - start >= 0.14
+    assert time.perf_counter() - start >= 0.14
 
 
 async def test_fake_embedder_is_deterministic_and_unit_length() -> None:
