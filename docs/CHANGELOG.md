@@ -19,3 +19,4 @@ One line per merged task: date, task, summary. Details live in `docs/changelogs/
 - 2026-11-19 · 14 entailment · optional LLM judge on supported sentences (off/optional/required, 4 at once, 15 s per answer, fail closed when required); replay keys mask prompt nonces and recorders report replay misses (decision 8).
 - 2026-11-19 · 14 live check · Nova judge labelled supported / contradicted / not_enough_info as intended; USD 0.000775.
 - 2026-11-19 · 15 leak · output scan: canary (plain/spaced/reversed/base64), 8-word system-prompt fragments, secret patterns, output PII, image/link exfiltration with IDNA allow-list; canary masked in replay keys (decision 9).
+- 2026-11-19 · 16 pipeline · guards composed around one model call (document PII, rescan, canary, schema or grounding, leak, restore), every step fail-closed with timeouts, one audit line + Prometheus metrics per request; placeholders no longer read as citations (decision 10).

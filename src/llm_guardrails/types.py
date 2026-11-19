@@ -174,6 +174,7 @@ class PipelineReport(BaseModel):
 
 
 _DOC_ID = re.compile(r"^[A-Za-z0-9_-]{1,32}$")
+_PLACEHOLDER_SHAPE = re.compile(r"^[A-Z][A-Z_]*_\d+$")
 
 
 class SourceDoc(BaseModel):
@@ -189,6 +190,10 @@ class SourceDoc(BaseModel):
     def _id_shape(cls, value: str) -> str:
         if not _DOC_ID.match(value):
             raise ValueError("source id must be 1-32 chars of letters, digits, '_' or '-'")
+        if _PLACEHOLDER_SHAPE.match(value):
+            # "EMAIL_1" is how PII placeholders look; a citation [EMAIL_1] would be
+            # ambiguous, and grounding reads that shape as a placeholder.
+            raise ValueError("source id must not look like a PII placeholder (e.g. EMAIL_1)")
         return value
 
 

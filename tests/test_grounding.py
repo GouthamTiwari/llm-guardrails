@@ -170,6 +170,22 @@ def test_splitter_does_not_split_before_lowercase() -> None:
     assert texts("See section 4. it applies to all.") == ["See section 4. it applies to all."]
 
 
+def test_pii_placeholders_are_content_not_citations() -> None:
+    assert citations("Write to [EMAIL_1] or [PHONE_IN_2] [S1].") == ["S1"]
+    result = check_grounding("We will write to [EMAIL_1] about the fee of Rs 200 [S1].", [S1])
+    assert result.sentences[0].outcome != Reason.GROUNDING_FABRICATED
+    # A sentence whose only bracket is a placeholder is uncited, not "supported".
+    assert check_sentence("The fee of Rs 200 goes to [EMAIL_1].", SOURCES)[0] == (
+        Reason.GROUNDING_UNCITED
+    )
+
+
+def test_source_ids_cannot_look_like_placeholders() -> None:
+    with pytest.raises(ValueError, match="placeholder"):
+        SourceDoc(id="EMAIL_1", text="x")
+    assert SourceDoc(id="doc_1", text="x").id == "doc_1"  # lower case is fine
+
+
 def test_citation_formats() -> None:
     assert citations("x [S1, S2] y [S3][S1] z [ S4 ; S5 ]") == ["S1", "S2", "S3", "S4", "S5"]
 

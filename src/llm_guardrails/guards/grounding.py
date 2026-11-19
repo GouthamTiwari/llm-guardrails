@@ -75,7 +75,13 @@ _ID = r"[A-Za-z0-9_-]{1,32}"
 # "[S1]", "[S1, S2]", "[S1][S2]". Any bracket holding id-shaped tokens counts: a bracket
 # like "[note]" is then read as a citation to a source that does not exist and is
 # rejected, which errs on the safe side.
-CITATION = re.compile(rf"\[\s*({_ID}(?:\s*[,;]\s*{_ID})*)\s*\]")
+# Exception: a PII placeholder such as "[EMAIL_1]" is content, not a citation. The system
+# prompt tells the model to keep placeholders, so reading them as citations would reject
+# every such answer as citing a made-up source. Source ids may not take that shape
+# (SourceDoc rejects them), so nothing real is lost, and a sentence citing only a
+# placeholder is simply uncited.
+_PLACEHOLDER_BRACKET = r"\[[A-Z][A-Z_]*_\d+\]"
+CITATION = re.compile(rf"(?!{_PLACEHOLDER_BRACKET})\[\s*({_ID}(?:\s*[,;]\s*{_ID})*)\s*\]")
 
 
 def citations(sentence: str) -> list[str]:
