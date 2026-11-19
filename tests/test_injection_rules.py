@@ -147,6 +147,8 @@ def test_each_rule_is_fast_on_long_adversarial_input(rule) -> None:
     limit failed once under load) while still catching the real problem."""
     t20 = _search_time(rule, 20_000)
     assert t20 < 0.5
-    # The signature of backtracking is super-linear growth: doubling the input must not
-    # much more than double the time (+10 ms slack for timer noise).
-    assert _search_time(rule, 40_000) < 3 * t20 + 0.01
+    # The signature of backtracking is super-linear growth. Linear search time roughly
+    # doubles when the input doubles (worst rule measured: 2.83x, because longer random text
+    # holds more partial matches). Catastrophic backtracking grows far faster than 6x, so
+    # 6x + 20 ms catches it while leaving room for timer noise (3x failed intermittently).
+    assert _search_time(rule, 40_000) < 6 * t20 + 0.02

@@ -45,6 +45,8 @@ extend-exclude = ["_kit", "tests/reference", "data/seed", "*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+# SIM905 rewrites "a b c".split() into one very long list literal, which then breaks E501.
+ignore = ["SIM905"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
