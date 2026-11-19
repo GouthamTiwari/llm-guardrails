@@ -44,8 +44,10 @@ SECURITY_GUARDS: frozenset[str] = frozenset(GUARD_NAMES)
 
 
 def known_entity_types() -> frozenset[str]:
-    """Entity types a policy may name. Task 04 replaces this with the detector registry."""
-    return BUILTIN_ENTITY_TYPES
+    """Entity types a policy may name: whatever the detector registry holds."""
+    from llm_guardrails.detectors.entities import registered_types  # avoid import at load
+
+    return registered_types() | BUILTIN_ENTITY_TYPES
 
 
 class _Strict(BaseModel):
