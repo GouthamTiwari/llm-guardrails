@@ -123,12 +123,16 @@ def test_reviewed_drops_are_absent() -> None:
     assert not set(dropped) & present
 
 
-def test_corpus_never_copies_seed_or_eval_data() -> None:
-    eval_texts = [r["text"] for r in SEED] + [
-        r["text"] for r in load_jsonl(DATA_DIR / "injection.jsonl")
-    ]
+def test_corpus_never_copies_seed_or_test_data() -> None:
+    """Spec 13.1: the corpus never overlaps the TEST split (or the seeds). A generated dev
+    row may happen to resemble an anchor (e.g. 'How can I update my mobile number...');
+    the split keeps any such row in dev, which the second assertion checks."""
+    rows = load_jsonl(DATA_DIR / "injection.jsonl")
+    protected = [r["text"] for r in SEED] + [r["text"] for r in rows if r["split"] == "test"]
     corpus_texts = [r["text"] for r in ATTACKS + BENIGN]
-    assert near_duplicate_pairs(corpus_texts, eval_texts) == []
+    assert near_duplicate_pairs(corpus_texts, protected) == []
+    close = {j for _, j, _ in near_duplicate_pairs(corpus_texts, [r["text"] for r in rows])}
+    assert all(rows[j]["split"] == "dev" for j in close)
 
 
 def test_corpus_has_no_internal_near_duplicates() -> None:

@@ -217,26 +217,150 @@ def corpus_embed(live: Live = False) -> None:
 
 # ----------------------------------------------------------------------------- dataset
 
+SuiteOrAll = Annotated[
+    str, typer.Option("--suite", help="injection, pii, grounding, schema or all.")
+]
+
+
+def _suites(value: str) -> list[str]:
+    from llm_guardrails.eval.datasets import SUITES
+
+    if value == "all":
+        return list(SUITES)
+    if value not in SUITES:
+        _fail(f"--suite must be one of {', '.join(SUITES)} or all")
+    return [value]
+
+
+def _generation_llm(suite: str, live: bool):
+    from llm_guardrails.eval.generate import recordings_path
+    from llm_guardrails.recording import RecordingLLM
+
+    settings = _settings()
+    if not live:
+        return RecordingLLM(recordings_path(suite), mode="replay", model_id=settings.chat_model_id)
+    from llm_guardrails.llm import BedrockLLM
+    from llm_guardrails.spend import SpendLedger
+
+    if settings.auth_method == "none":
+        _fail("--live needs Bedrock credentials in .env")
+    inner = BedrockLLM(settings, ledger=SpendLedger(limit_usd=settings.live_budget_usd))
+    return RecordingLLM(recordings_path(suite), mode="record", inner=inner)
+
 
 @dataset_app.command("generate")
 def dataset_generate(
     suite: Annotated[Suite, typer.Option("--suite", help="Which dataset.")],
     live: Live = False,
 ) -> None:
-    """Generate an evaluation dataset."""
-    _later("18", "dataset generate")
+    """Grow the seed rows into data/<suite>.jsonl (replays recordings unless --live)."""
+    from llm_guardrails.eval.generate import batches_for, generate
+    from llm_guardrails.types import ReplayMissing
+
+    name = suite.value
+    typer.echo(f"{name}: {len(batches_for(name))} model call(s) planned "
+               f"({'live, paid' if live else 'replay, free'})")  # fmt: skip
+    try:
+        stats = asyncio.run(generate(name, _generation_llm(name, live)))
+    except ReplayMissing as exc:
+        _fail(f"{len(exc.keys)} call(s) have no recording: rerun with --live")
+    typer.echo(json.dumps(dict(sorted(stats.items())), indent=2))
 
 
-def _dataset_stub(name: str):
-    # A factory, not a default argument: Typer would turn a default argument into an option.
-    def stub() -> None:
-        _later("18", f"dataset {name}")
+@dataset_app.command("embed")
+def dataset_embed(live: Live = False) -> None:
+    """Titan vectors for the injection rows (needed for the meaning-level leakage check)."""
+    from llm_guardrails.eval.datasets import load_suite
+    from llm_guardrails.eval.leakage import embed_texts
 
-    return stub
+    if not live:
+        _fail("embedding calls Bedrock: rerun with --live")
+    from llm_guardrails.embeddings import TitanEmbedder
+
+    rows = load_suite("injection", include_dropped=True)
+    new = asyncio.run(embed_texts([r["text"] for r in rows], TitanEmbedder(_settings())))
+    typer.echo(f"embedded {new} new text(s); {len(rows)} rows have vectors")
 
 
-for _cmd in ["validate", "leakcheck", "split", "review-sample", "apply-review"]:
-    dataset_app.command(_cmd, help=f"Dataset step: {_cmd} (Task 18).")(_dataset_stub(_cmd))
+@dataset_app.command("split")
+def dataset_split(suite: SuiteOrAll = "all") -> None:
+    """Assign dev/test (50/50 per stratum, duplicate groups together, seeds in dev)."""
+    from llm_guardrails.eval.datasets import split_suite
+
+    for name in _suites(suite):
+        typer.echo(f"{name}: {split_suite(name)}")
+
+
+@dataset_app.command("validate")
+def dataset_validate(suite: SuiteOrAll = "all") -> None:
+    """Check every row (schema, ids, labels, checksums, example-only domains)."""
+    from llm_guardrails.eval.datasets import validate_suite
+
+    failed = False
+    for name in _suites(suite):
+        problems = validate_suite(name)
+        typer.echo(f"{name}: {'OK' if not problems else f'{len(problems)} problem(s)'}")
+        for p in problems[:30]:
+            typer.echo(f"  {p}")
+        failed |= bool(problems)
+    raise typer.Exit(1 if failed else 0)
+
+
+@dataset_app.command("leakcheck")
+def dataset_leakcheck(suite: SuiteOrAll = "all") -> None:
+    """Fail if a test row is too close to dev rows or to the layer-2 corpus."""
+    from llm_guardrails.eval.leakage import check_suite
+
+    failed = False
+    for name in _suites(suite):
+        findings = check_suite(name)
+        typer.echo(f"{name}: {'OK' if not findings else f'{len(findings)} leak(s)'}")
+        for f in findings[:30]:
+            typer.echo(f"  {f}")
+        failed |= bool(findings)
+    raise typer.Exit(1 if failed else 0)
+
+
+@dataset_app.command("review-sample")
+def dataset_review_sample(
+    suite: SuiteOrAll = "all",
+    frac: Annotated[float, typer.Option(help="Share of rows to sample.")] = 0.10,
+    seed: Annotated[int, typer.Option(help="Random seed.")] = 7,
+) -> None:
+    """Write data/review/review_sample.csv for a human spot-check."""
+    from llm_guardrails.eval.review import (
+        REVIEW_DOC,
+        SAMPLE_PATH,
+        review_doc,
+        sample_rows,
+        write_sample,
+    )
+
+    rows = sample_rows(_suites(suite), frac, seed)
+    write_sample(rows)
+    REVIEW_DOC.write_text(review_doc("pending", len(rows)), encoding="utf-8", newline="\n")
+    typer.echo(f"wrote {len(rows)} rows to {SAMPLE_PATH}")
+
+
+@dataset_app.command("apply-review")
+def dataset_apply_review(
+    csv_path: Annotated[Path | None, typer.Option("--csv", help="Filled review CSV.")] = None,
+) -> None:
+    """Apply the verdicts from the review CSV and record the counts."""
+    from llm_guardrails.eval.review import REVIEW_DOC, SAMPLE_PATH, apply_review, review_doc
+
+    path = csv_path or SAMPLE_PATH
+    if not path.is_file():
+        _fail(f"no review file at {path}: run `guardrails dataset review-sample` first")
+    outcome = apply_review(path)
+    reviewed = sum(outcome.counts[k] for k in ("ok", "edited", "dropped"))
+    status = "applied" if reviewed and not outcome.counts["blank"] else "partly applied"
+    total = reviewed + outcome.counts["blank"]
+    REVIEW_DOC.write_text(review_doc(status, total, outcome), encoding="utf-8", newline="\n")
+    typer.echo(json.dumps(dict(outcome.counts)))
+    for e in outcome.errors:
+        typer.echo(f"  {e}", err=True)
+    raise typer.Exit(1 if outcome.errors else 0)
 
 
 # ----------------------------------------------------------------------------- sweep

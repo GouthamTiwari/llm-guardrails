@@ -98,12 +98,6 @@ def test_test_eval_needs_the_operating_point(tmp_path, monkeypatch) -> None:
 @pytest.mark.parametrize(
     ("args", "task"),
     [
-        (["dataset", "generate", "--suite", "pii"], "18"),
-        (["dataset", "validate"], "18"),
-        (["dataset", "leakcheck"], "18"),
-        (["dataset", "split"], "18"),
-        (["dataset", "review-sample"], "18"),
-        (["dataset", "apply-review"], "18"),
         (["sweep", "injection"], "19"),
         (["sweep", "grounding"], "20"),
         (["eval", "--suite", "pii"], "19"),
@@ -115,6 +109,14 @@ def test_test_eval_needs_the_operating_point(tmp_path, monkeypatch) -> None:
 def test_later_commands_exist_and_say_when(args, task) -> None:
     r = run(*args)
     assert r.exit_code == 2 and f"Task {task}" in r.output
+
+
+def test_dataset_commands_check_their_arguments(tmp_path) -> None:
+    assert run("dataset", "embed").exit_code == 2  # embedding is paid: needs --live
+    r = run("dataset", "split", "--suite", "nope")
+    assert r.exit_code == 2 and "--suite must be one of" in r.output
+    r = run("dataset", "apply-review", "--csv", str(tmp_path / "missing.csv"))
+    assert r.exit_code == 2 and "review-sample" in r.output
 
 
 def test_spend_reads_the_ledger(tmp_path, monkeypatch) -> None:
