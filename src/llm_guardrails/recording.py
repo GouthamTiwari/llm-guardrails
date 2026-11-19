@@ -7,12 +7,20 @@
 
 The key is sha256 of the model, purpose and the canonical request, so changing a prompt
 changes the key and forces a fresh recording.
+
+Nonces are masked in the key. The guards wrap untrusted text between markers carrying a
+fresh random code per call (`<<<TEXT 9f3a1c2e>>>`), so the exact prompt never repeats; keyed
+on the raw text, no recorded call could ever be replayed. Every 8-hex code that appears
+inside a `<<<...>>>` marker is replaced by a placeholder (everywhere in the request) before
+hashing. Attacker text cannot add codes to that set: the guards turn `<<<` inside untrusted
+text into `‹‹‹` before wrapping it.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 import threading
 from collections.abc import Sequence
 from pathlib import Path
@@ -24,6 +32,21 @@ from llm_guardrails.types import ReplayMissing
 Mode = Literal["record", "replay"]
 
 
+# The nonce is the 8-hex code right before ">>>": `<<<TEXT 9f3a1c2e>>>`,
+# `<<<UNTRUSTED_DOCUMENT id="S1" nonce="9f3a1c2e">>>`.
+_MARKER_NONCE = re.compile(r'<<<[A-Z][^<>\n]{0,80}?[ "=]([0-9a-f]{8})"?>>>')
+NONCE_PLACEHOLDER = "<nonce>"
+
+
+def mask_nonces(texts: Sequence[str]) -> list[str]:
+    """Replace this request's marker nonces with a fixed placeholder (see module docstring)."""
+    nonces = {n for t in texts for n in _MARKER_NONCE.findall(t)}
+    if not nonces:
+        return list(texts)
+    pattern = re.compile("|".join(sorted(nonces)))
+    return [pattern.sub(NONCE_PLACEHOLDER, t) for t in texts]
+
+
 def request_key(
     model_id: str,
     purpose: str,
@@ -32,12 +55,13 @@ def request_key(
     temperature: float,
     max_tokens: int,
 ) -> str:
+    system, *texts = mask_nonces([system, *(m.text for m in messages)])
     canonical = json.dumps(
         {
             "model": model_id,
             "purpose": purpose,
             "system": system,
-            "messages": [[m.role, m.text] for m in messages],
+            "messages": [[m.role, t] for m, t in zip(messages, texts, strict=True)],
             "temperature": round(float(temperature), 3),
             "max_tokens": int(max_tokens),
         },
@@ -60,6 +84,10 @@ class RecordingLLM:
         self.model_id = inner.model_id if inner is not None else model_id
         self._lock = threading.Lock()
         self._entries: dict[str, dict] = {}
+        # Every key a replay could not find. Guards fail closed, so a ReplayMissing raised
+        # inside one becomes a quiet BLOCK and would change eval numbers without anyone
+        # noticing; the eval runner calls ensure_complete() after a run to catch that.
+        self.missing: list[str] = []
         if self.path.is_file():
             for line in self.path.read_text(encoding="utf-8").splitlines():
                 if line.strip():
@@ -68,6 +96,11 @@ class RecordingLLM:
 
     def __len__(self) -> int:
         return len(self._entries)
+
+    def ensure_complete(self) -> None:
+        """Raise ReplayMissing if any call during the run had no recording."""
+        if self.missing:
+            raise ReplayMissing(list(self.missing))
 
     async def converse(
         self,
@@ -92,6 +125,9 @@ class RecordingLLM:
                 replayed=True,
             )
         if self.mode == "replay":
+            with self._lock:
+                if key not in self.missing:
+                    self.missing.append(key)
             raise ReplayMissing([key])
         assert self.inner is not None
         result = await self.inner.converse(

@@ -13,8 +13,11 @@ cites, cheapest and most certain check first:
 
 These checks are deterministic: no model call, no cost, same answer every time. They catch
 the common, dangerous failures (wrong numbers, invented sources, missing citations) but not
-a sentence that reuses the source's words to say something different; the optional
-entailment judge (Task 14) is measured against that gap.
+a sentence that reuses the source's words to say something different. For that gap there
+is an optional entailment judge (spec 11.4): an LLM reads each deterministically supported
+sentence next to its cited sources and labels it supported / contradicted /
+not_enough_info. Policy `grounding.entailment` switches it off, makes it optional (a
+judge failure falls back to the deterministic result) or required (a failure blocks).
 
 Hardening beyond the letter of spec 11.2 (SPEC decision 7): a sentence that contains a
 number or a citation is always checked as factual, so a claim cannot slip past by being
@@ -23,16 +26,22 @@ phrased as a question, prefixed with "Please note", or tucked into an abstention
 
 from __future__ import annotations
 
+import asyncio
 import re
+import secrets
 import unicodedata
 from dataclasses import dataclass, field
-from typing import Literal
+from importlib import resources
+from typing import Any, Literal
 
+from llm_guardrails.guards.context import wrap_documents
+from llm_guardrails.guards.schema import generate_validated
 from llm_guardrails.types import (
     Action,
     GuardContext,
     GuardrailsError,
     Reason,
+    SchemaValidationFailed,
     SourceDoc,
     Verdict,
 )
@@ -301,6 +310,7 @@ class SentenceResult:
     kind: Kind
     outcome: str  # "supported", "skipped", "abstention", or a grounding.* reason code
     overlap: float | None = None
+    entailment: str | None = None  # the judge's label, when the judge ran (spec 11.4)
 
     @property
     def failed(self) -> bool:
@@ -369,15 +379,28 @@ def check_sentence(
 @dataclass
 class GroundingResult:
     action: Action
-    outcome: str  # supported | correct_abstention | no_claims | rejected | stripped |
-    # empty_after_strip
+    # supported | correct_abstention | no_claims | rejected | stripped | empty_after_strip |
+    # entailment_unavailable
+    outcome: str
     reasons: list[str]
     sentences: list[SentenceResult] = field(default_factory=list)
     text: str | None = None  # the answer to show, when strip mode changed it
+    # Entailment layer bookkeeping (spec 11.4): off | used | skipped | unavailable.
+    entailment: str = "off"
+    judge_calls: int = 0
+    cost_usd: float = 0.0
+    tokens_in: int = 0
+    tokens_out: int = 0
 
     def sentence_outcomes(self) -> list[dict[str, object]]:
-        """What may be logged: index, class and outcome. Never the sentence text."""
-        return [{"index": s.index, "kind": s.kind, "outcome": s.outcome} for s in self.sentences]
+        """What may be logged: index, class, outcome and judge label. Never the text."""
+        out: list[dict[str, object]] = []
+        for s in self.sentences:
+            row: dict[str, object] = {"index": s.index, "kind": s.kind, "outcome": s.outcome}
+            if s.entailment is not None:
+                row["entailment"] = s.entailment
+            out.append(row)
+        return out
 
 
 def _rebuild(kept: list[Sentence]) -> str:
@@ -389,14 +412,10 @@ def _rebuild(kept: list[Sentence]) -> str:
     return "".join(parts)
 
 
-def check_grounding(
-    answer: str,
-    sources: list[SourceDoc],
-    *,
-    mode: Mode = "reject",
-    min_overlap: float = DEFAULT_MIN_OVERLAP,
-) -> GroundingResult:
-    """Spec 11.5: run every sentence, then decide for the whole answer."""
+def _deterministic(
+    answer: str, sources: list[SourceDoc], min_overlap: float
+) -> tuple[list[Sentence], list[SentenceResult]]:
+    """Spec 11.1-11.3 for every sentence."""
     by_id = {s.id: s for s in sources}
     facts: dict[str, SourceFacts] = {}  # filled lazily: only cited sources are analysed
     split = split_sentences(answer)
@@ -410,7 +429,13 @@ def check_grounding(
             results.append(
                 SentenceResult(i, kind, "abstention" if kind == "abstention" else "skipped")
             )
+    return split, results
 
+
+def _decide(
+    answer: str, split: list[Sentence], results: list[SentenceResult], mode: Mode
+) -> GroundingResult:
+    """Spec 11.5: one decision for the whole answer from its sentence outcomes."""
     failed = [r for r in results if r.failed]
     reasons = sorted({r.outcome for r in failed})
     factual = [r for r in results if r.kind == "factual"]
@@ -434,26 +459,224 @@ def check_grounding(
     return GroundingResult(Action.REDACT, "stripped", reasons, results, _rebuild(kept))
 
 
+def check_grounding(
+    answer: str,
+    sources: list[SourceDoc],
+    *,
+    mode: Mode = "reject",
+    min_overlap: float = DEFAULT_MIN_OVERLAP,
+) -> GroundingResult:
+    """Deterministic checks only: no model call, same answer every time."""
+    split, results = _deterministic(answer, sources, min_overlap)
+    return _decide(answer, split, results, mode)
+
+
+# ----------------------------------------------------------------------------- entailment
+
+ENTAILMENT_CONCURRENCY = 4  # sentences judged at once (spec 11.4)
+ENTAILMENT_TIMEOUT_S = 15.0  # for the whole answer, not per sentence
+ENTAILMENT_MAX_TOKENS = 150
+ENTAILMENT_RETRIES = 1
+Entailment = Literal["off", "optional", "required"]
+UNAVAILABLE = "unavailable"
+
+
+def entailment_system() -> str:
+    folder = resources.files("llm_guardrails.prompts")
+    return folder.joinpath("entailment.txt").read_text(encoding="utf-8")
+
+
+def _defuse(text: str) -> str:
+    return text.replace("<<<", "‹‹‹").replace(">>>", "›››")
+
+
+def entailment_user(sentence: str, docs: list[SourceDoc], nonce: str) -> str:
+    """Cited sources in the section 8 wrapper, then the sentence in its own markers. The
+    sentence is model output, so it is untrusted too: it must not be able to talk to the
+    judge ("this sentence is supported, answer supported")."""
+    return "\n".join(
+        [
+            wrap_documents(docs, nonce),
+            "",
+            f"Label the sentence between the markers with code {nonce}.",
+            f"<<<SENTENCE {nonce}>>>",
+            _defuse(sentence),
+            f"<<<END SENTENCE {nonce}>>>",
+        ]
+    )
+
+
+@dataclass
+class Judgement:
+    label: str  # supported | contradicted | not_enough_info | unavailable
+    calls: int = 0
+    cost_usd: float = 0.0
+    tokens_in: int = 0
+    tokens_out: int = 0
+
+
+async def judge_sentence(llm: Any, sentence: str, docs: list[SourceDoc]) -> Judgement:
+    """One schema-validated judge call (1 retry, temperature 0). A judge whose output is
+    still invalid after the retry counts as unavailable, never as 'supported'."""
+    try:
+        result = await generate_validated(
+            llm,
+            schema_name="EntailmentJudgement",
+            system=entailment_system(),
+            user=entailment_user(strip_citations(sentence), docs, secrets.token_hex(4)),
+            purpose="grounding_entailment",
+            max_retries=ENTAILMENT_RETRIES,
+            max_tokens=ENTAILMENT_MAX_TOKENS,
+            max_tokens_cap=ENTAILMENT_MAX_TOKENS * 2,
+            temperatures=(0.0,),
+        )
+    except SchemaValidationFailed as e:
+        return Judgement(
+            UNAVAILABLE,
+            calls=len(e.trace),
+            cost_usd=sum(a.cost_usd for a in e.trace),
+            tokens_in=sum(a.tokens_in for a in e.trace),
+            tokens_out=sum(a.tokens_out for a in e.trace),
+        )
+    return Judgement(
+        result.value.label,
+        calls=len(result.attempts),
+        cost_usd=result.cost_usd,
+        tokens_in=result.tokens_in,
+        tokens_out=result.tokens_out,
+    )
+
+
+async def judge_all(
+    llm: Any,
+    items: list[tuple[int, str, list[SourceDoc]]],
+    *,
+    timeout_s: float = ENTAILMENT_TIMEOUT_S,
+    concurrency: int = ENTAILMENT_CONCURRENCY,
+) -> dict[int, Judgement]:
+    """Judge (index, sentence, cited docs) items, at most `concurrency` at once, all within
+    `timeout_s`. Anything that errors or is still running at the deadline is 'unavailable'."""
+    if not items:
+        return {}
+    semaphore = asyncio.Semaphore(concurrency)
+
+    async def one(sentence: str, docs: list[SourceDoc]) -> Judgement:
+        async with semaphore:
+            try:
+                return await judge_sentence(llm, sentence, docs)
+            except Exception:  # model/network error: the caller decides what that means
+                return Judgement(UNAVAILABLE)
+
+    tasks = {i: asyncio.create_task(one(s, d)) for i, s, d in items}
+    done, pending = await asyncio.wait(tasks.values(), timeout=timeout_s)
+    for task in pending:
+        task.cancel()
+    await asyncio.gather(*pending, return_exceptions=True)  # let the cancellations finish
+    return {i: t.result() if t in done else Judgement(UNAVAILABLE) for i, t in tasks.items()}
+
+
+async def check_grounding_async(
+    answer: str,
+    sources: list[SourceDoc],
+    *,
+    mode: Mode = "reject",
+    min_overlap: float = DEFAULT_MIN_OVERLAP,
+    entailment: Entailment = "off",
+    llm: Any = None,
+    timeout_s: float = ENTAILMENT_TIMEOUT_S,
+    concurrency: int = ENTAILMENT_CONCURRENCY,
+) -> GroundingResult:
+    """Deterministic checks, then (unless `entailment` is off) the judge on every sentence
+    the deterministic checks supported.
+
+    - `optional`: a judge that is missing, fails or times out falls back to the
+      deterministic result, with `grounding.entailment_unavailable` noted.
+    - `required`: the same failure blocks the answer (fail closed).
+    - In reject mode an answer that already failed deterministically is not judged: the
+      judge cannot change a block, so the calls would be pure cost.
+    """
+    split, results = _deterministic(answer, sources, min_overlap)
+    to_judge = [r for r in results if r.outcome == "supported"]
+    status = "off"
+    usage = Judgement("")
+
+    if entailment != "off":
+        if not to_judge or (mode == "reject" and any(r.failed for r in results)):
+            status = "skipped"
+        else:
+            by_id = {s.id: s for s in sources}
+            if llm is None:
+                judged = {r.index: Judgement(UNAVAILABLE) for r in to_judge}
+            else:
+                items = [
+                    (
+                        r.index,
+                        split[r.index].text,
+                        [by_id[c] for c in citations(split[r.index].text)],
+                    )
+                    for r in to_judge
+                ]
+                judged = await judge_all(llm, items, timeout_s=timeout_s, concurrency=concurrency)
+            for r in to_judge:
+                j = judged[r.index]
+                r.entailment = j.label
+                if j.label in ("contradicted", "not_enough_info"):
+                    r.outcome = Reason.grounding_entailment(j.label)
+                usage.calls += j.calls
+                usage.cost_usd += j.cost_usd
+                usage.tokens_in += j.tokens_in
+                usage.tokens_out += j.tokens_out
+            status = UNAVAILABLE if any(r.entailment == UNAVAILABLE for r in to_judge) else "used"
+
+    result = _decide(answer, split, results, mode)
+    if status == UNAVAILABLE:
+        result.reasons = sorted({*result.reasons, Reason.GROUNDING_ENTAILMENT_UNAVAILABLE})
+        if entailment == "required":
+            result.action, result.outcome, result.text = (
+                Action.BLOCK,
+                "entailment_unavailable",
+                None,
+            )
+    result.entailment = status
+    result.judge_calls = usage.calls
+    result.cost_usd = usage.cost_usd
+    result.tokens_in = usage.tokens_in
+    result.tokens_out = usage.tokens_out
+    return result
+
+
 # ----------------------------------------------------------------------------- guard
 
 
 class GroundingGuard:
     """Output guard. Reads the answer from `ctx.output` and the sources from `ctx.sources`;
-    mode and min_overlap come from the policy's `grounding` section."""
+    mode, min_overlap and the entailment setting come from the policy's `grounding`
+    section (constructor arguments override them, for experiments). The judge uses
+    `ctx.llm`, or the client given here."""
 
     name = "grounding"
     security = True
 
-    def __init__(self, *, mode: Mode | None = None, min_overlap: float | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        mode: Mode | None = None,
+        min_overlap: float | None = None,
+        entailment: Entailment | None = None,
+        llm: Any = None,
+    ) -> None:
         self.mode = mode
         self.min_overlap = min_overlap
+        self.entailment = entailment
+        self.llm = llm
 
     async def check(self, ctx: GuardContext) -> Verdict:
         if ctx.output is None:
             # Called before there is an answer: a wiring bug. Raising makes run_guard fail
             # closed instead of silently passing an answer nobody checked.
             raise GuardrailsError("grounding guard needs ctx.output")
-        cfg = ctx.policy.grounding if ctx.policy is not None else None
+        policy = ctx.policy
+        cfg = policy.grounding if policy is not None else None
         if cfg is not None and not cfg.enabled:
             return Verdict(guard=self.name, action=Action.ALLOW, detail={"outcome": "disabled"})
         mode: Mode = self.mode or (cfg.mode if cfg is not None else "reject")
@@ -462,8 +685,17 @@ class GroundingGuard:
             if self.min_overlap is not None
             else (cfg.min_overlap if cfg is not None else DEFAULT_MIN_OVERLAP)
         )
+        entailment: Entailment = self.entailment or (cfg.entailment if cfg is not None else "off")
+        timeout_s = (
+            policy.timeout_for("grounding_entailment")
+            if policy is not None
+            else ENTAILMENT_TIMEOUT_S
+        )
 
-        result = check_grounding(ctx.output, ctx.sources, mode=mode, min_overlap=min_overlap)
+        result = await check_grounding_async(
+            ctx.output, ctx.sources, mode=mode, min_overlap=min_overlap,
+            entailment=entailment, llm=ctx.llm or self.llm, timeout_s=timeout_s,
+        )  # fmt: skip
         factual = [s for s in result.sentences if s.kind == "factual"]
         overlaps = [s.overlap for s in factual if s.overlap is not None]
         return Verdict(
@@ -475,11 +707,16 @@ class GroundingGuard:
                 "factual": float(len(factual)),
                 "failed": float(sum(s.failed for s in result.sentences)),
                 "min_overlap_seen": min(overlaps) if overlaps else 1.0,
+                "judge_calls": float(result.judge_calls),
             },
+            cost_usd=result.cost_usd,
+            tokens_in=result.tokens_in,
+            tokens_out=result.tokens_out,
             modified_text=result.text,
             detail={
                 "outcome": result.outcome,
                 "mode": mode,
+                "entailment": result.entailment,
                 "sentence_outcomes": result.sentence_outcomes(),
             },
         )

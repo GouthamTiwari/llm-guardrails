@@ -151,6 +151,33 @@ def test_request_key_changes_with_any_input() -> None:
         assert request_key(**(base | {field: value})) != k
 
 
+def _key(user: str, system: str = "s") -> str:
+    return request_key("m", "p", system, [Message("user", user)], 0.0, 10)
+
+
+def test_request_key_ignores_marker_nonces() -> None:
+    """Guards put a fresh random code in every prompt; without masking, nothing recorded
+    could ever replay."""
+    a = "Classify with code 1a2b3c4d.\n<<<TEXT 1a2b3c4d>>>\nhello\n<<<END TEXT 1a2b3c4d>>>"
+    b = a.replace("1a2b3c4d", "99887766")
+    assert _key(a) == _key(b)
+    assert _key(a) != _key(a.replace("hello", "hullo"))  # the content still counts
+
+
+def test_request_key_masks_document_wrapper_nonces() -> None:
+    doc = (
+        '<<<UNTRUSTED_DOCUMENT id="S1" nonce="{n}">>>\nfee\n'
+        '<<<END_UNTRUSTED_DOCUMENT nonce="{n}">>>'
+    )
+    assert _key(doc.format(n="0badf00d")) == _key(doc.format(n="deadbeef"))
+
+
+def test_request_key_does_not_mask_hex_outside_markers() -> None:
+    # Untrusted text cannot create markers (guards defuse "<<<"), so plain hex is content.
+    assert _key("order 1a2b3c4d") != _key("order 99887766")
+    assert _key("‹‹‹TEXT 1a2b3c4d›››") != _key("‹‹‹TEXT 99887766›››")
+
+
 def test_record_mode_needs_a_real_client(tmp_path) -> None:
     with pytest.raises(ValueError):
         RecordingLLM(tmp_path / "x.jsonl", mode="record")

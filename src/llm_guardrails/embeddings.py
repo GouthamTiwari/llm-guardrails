@@ -208,12 +208,21 @@ class RecordedEmbedder:
         self.inner = inner
         self.model_id = bundle.model_id
         self.dims = bundle.dims
+        # Keys a replay could not find; see RecordingLLM.missing for why this exists.
+        self.missing: list[str] = []
+
+    def ensure_complete(self) -> None:
+        """Raise ReplayMissing if any text during the run had no recorded vector."""
+        if self.missing:
+            raise ReplayMissing(list(self.missing))
 
     async def embed(self, texts: Sequence[str], *, purpose: str) -> np.ndarray:
         missing = [t for t in texts if self.bundle.get(t) is None]
         if missing:
             if self.inner is None:
-                raise ReplayMissing([embed_key(self.model_id, self.dims, t) for t in missing])
+                keys = [embed_key(self.model_id, self.dims, t) for t in missing]
+                self.missing += [k for k in keys if k not in self.missing]
+                raise ReplayMissing(keys)
             vectors = await self.inner.embed(missing, purpose=purpose)
             for text, vec in zip(missing, vectors, strict=True):
                 self.bundle.put(text, vec)

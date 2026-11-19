@@ -34,6 +34,7 @@ DEFAULT_TIMEOUTS_S: dict[str, float] = {
     "model": 30.0,
     "schema": 45.0,
     "grounding": 20.0,
+    "grounding_entailment": 15.0,
     "leak": 1.0,
     "request": 90.0,
 }

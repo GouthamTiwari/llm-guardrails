@@ -110,8 +110,13 @@ async def test_bundle_save_load_and_recorded_embedder(tmp_path) -> None:
     assert len(loaded) == 2
     replay = RecordedEmbedder(loaded)
     np.testing.assert_allclose(await replay.embed(["b", "a"], purpose="t"), vecs[::-1])
+    replay.ensure_complete()  # nothing missed yet
     with pytest.raises(ReplayMissing):
         await replay.embed(["never seen"], purpose="t")
+    # Even if a guard swallowed that error, the run as a whole still reports the miss.
+    with pytest.raises(ReplayMissing) as err:
+        replay.ensure_complete()
+    assert len(err.value.keys) == 1
     # A bundle for a different model or size is ignored, never mixed in.
     assert len(VectorBundle(prefix, "other-model", 8)) == 0
     assert len(VectorBundle(prefix, "fake-embed", 16)) == 0
