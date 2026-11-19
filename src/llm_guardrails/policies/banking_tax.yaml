@@ -25,6 +25,11 @@ topics:
     - name: account_support
       keywords: [password, login, otp, mobile number, email, address, update, statement,
                  dispute, complaint, ticket, help]
+    # Hindi and Hinglish users ask the same things. Non-ASCII keywords match as substrings,
+    # so short stems are avoided ("कर" = tax would also match "करें" = do).
+    - name: hindi_hinglish
+      keywords: [खाता, खाते, केवाईसी, बैंक, जीएसटी, रिफंड, लोन, ऋण, ब्याज, टैक्स, आयकर,
+                 khata, paisa, paise, byaj, karz, jama]
 
 denied_actions:
   - '\bdrop\s+table\b'

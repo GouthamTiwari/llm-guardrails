@@ -8,3 +8,4 @@ One line per merged task: date, task, summary. Details live in `docs/changelogs/
 - 2026-11-19 · 04 pii-detectors · Verhoeff/Luhn/GSTIN checksums (10k-case agreement with reference), 8 entity detectors with IIN prefixes, context suppression and overlap rules; 2 seed GSTINs corrected (spec decision 3).
 - 2026-11-19 · 05 pii-guard · per-type block/redact/allow, consistent typed placeholders, spoof-proof restore, salted hashes and an allow-listed audit record; dump test proves no seed PII value reaches any log or report.
 - 2026-11-19 · 06 llm-clients · price table, persistent USD 5 spend cap, Bedrock Converse + Titan clients (stub-tested), fakes, record/replay for offline evals; first live calls cost $0.000025.
+- 2026-11-19 · 07 policy-guard · size limits first, denied actions on the scan text (obfuscation-proof), topic allow-list with Hindi/Hinglish keywords, tool-call gate for agents.
