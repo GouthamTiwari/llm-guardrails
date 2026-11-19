@@ -242,6 +242,7 @@ async def generate_validated(
     max_retries: int = 2,
     max_tokens: int = 512,
     max_tokens_cap: int = 1024,
+    temperatures: Sequence[float] = TEMPERATURES,
 ) -> SchemaResult:
     """Call the model until its output validates, at most `max_retries + 1` times.
 
@@ -255,7 +256,7 @@ async def generate_validated(
     last_errors: list[str] = []
     tokens = max_tokens
     for n in range(1, max_retries + 2):  # bounded: there is no other loop
-        temperature = TEMPERATURES[min(n - 1, len(TEMPERATURES) - 1)]
+        temperature = temperatures[min(n - 1, len(temperatures) - 1)]
         start = time.perf_counter()
         result = await llm.converse(
             system=system, messages=messages, temperature=temperature, max_tokens=tokens,

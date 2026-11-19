@@ -4,10 +4,10 @@
   on their own: they catch phrasings someone thought of in advance.
 - Layer 2: similarity to a corpus of known attacks, minus closeness to known normal
   requests (catches paraphrases the rules miss).
-- Layer 3 (Task 11): a cheap LLM classifier, only for the grey zone.
+- Layer 3: a cheap LLM classifier with a strict JSON verdict, only for the grey zone where
+  layers 1 and 2 are unsure, so most traffic never pays for a model call.
 
-Until layer 3 exists: block on a strong rule or on an embedding score >= t_block, allow
-everything else, and block (fail closed) if the embedding layer itself fails.
+The decision table and the failure rules are documented on InjectionGuard below.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import asyncio
 import hashlib
 import json
 import re
+import secrets
 import unicodedata
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -292,10 +293,105 @@ async def score_embeddings(
     return embed_score_from_vectors(vectors, corpus, benign_lambda)
 
 
+# ----------------------------------------------------------------------------- layer 3
+
+CLASSIFIER_MAX_TOKENS = 200
+CLASSIFIER_RETRIES = 1  # one corrective retry; then the guard fails closed
+MAX_CLASSIFIER_CHARS = 4000  # what the classifier sees of a long input (head and tail)
+
+
+@dataclass(frozen=True)
+class LLMScore:
+    score: float  # probability-like "this is an attack", 0..1
+    label: str
+    category: str
+    cost_usd: float
+    tokens_in: int
+    tokens_out: int
+    attempts: int
+
+
+def classifier_system() -> str:
+    folder = resources.files("llm_guardrails.prompts")
+    return folder.joinpath("injection_classifier.txt").read_text(encoding="utf-8")
+
+
+def _defuse(s: str) -> str:
+    return s.replace("<<<", "‹‹‹").replace(">>>", "›››")
+
+
+def classifier_user(text: str, decoded: list[str], nonce: str) -> str:
+    """The text as data between nonce-tagged markers. Marker look-alikes are defused so the
+    text cannot close its own wrapper and pose as the system."""
+    if len(text) > MAX_CLASSIFIER_CHARS:
+        half = MAX_CLASSIFIER_CHARS // 2
+        text = text[:half] + "\n[... middle omitted ...]\n" + text[-half:]
+    parts = [
+        f"Classify the text between the markers with code {nonce}.",
+        f"<<<TEXT {nonce}>>>",
+        _defuse(text),
+        f"<<<END TEXT {nonce}>>>",
+    ]
+    if decoded:
+        parts += [
+            "The guard decoded hidden content from that text (base64/hex). Treat it as part "
+            f"of the same text:\n<<<DECODED {nonce}>>>",
+            _defuse("\n".join(decoded))[:MAX_CLASSIFIER_CHARS],
+            f"<<<END DECODED {nonce}>>>",
+        ]
+    return "\n".join(parts)
+
+
+async def score_llm(text: str, decoded: list[str], llm: Any) -> LLMScore:
+    from llm_guardrails.guards.schema import generate_validated
+
+    result = await generate_validated(
+        llm,
+        schema_name="InjectionJudgement",
+        system=classifier_system(),
+        user=classifier_user(text, decoded, secrets.token_hex(4)),
+        purpose="injection_classifier",
+        max_retries=CLASSIFIER_RETRIES,
+        max_tokens=CLASSIFIER_MAX_TOKENS,
+        max_tokens_cap=CLASSIFIER_MAX_TOKENS * 2,
+        temperatures=(0.0,),
+    )
+    j = result.value
+    score = j.confidence if j.label == "attack" else 1.0 - j.confidence
+    return LLMScore(
+        score=round(score, 4),
+        label=j.label,
+        category=j.category,
+        cost_usd=result.cost_usd,
+        tokens_in=result.tokens_in,
+        tokens_out=result.tokens_out,
+        attempts=len(result.attempts),
+    )
+
+
 # ----------------------------------------------------------------------------- guard
 
 
+def _timeout(policy: Any, key: str) -> float:
+    from llm_guardrails.policy_config import DEFAULT_TIMEOUTS_S
+
+    return policy.timeout_for(key) if policy is not None else DEFAULT_TIMEOUTS_S[key]
+
+
 class InjectionGuard:
+    """Layered decision (spec 7.4):
+
+        strong rule                      -> BLOCK (no model calls at all)
+        embedding score >= t_block       -> BLOCK
+        max(rules, embedding) < t_allow  -> ALLOW
+        otherwise (grey zone)            -> LLM classifier: score >= t_llm -> BLOCK, else ALLOW
+
+    Failures (spec 7.5): an embedding failure sends the input to the classifier; a classifier
+    failure, timeout or invalid verdict blocks. Without a classifier (switched off in policy,
+    or none given) the grey zone is allowed, unless the embedding layer failed: then there
+    is no evidence either way, and the guard fails closed.
+    """
+
     name = "injection"
     security = True
 
@@ -306,12 +402,14 @@ class InjectionGuard:
         config: InjectionConfig | None = None,
         corpus: AttackCorpus | None = None,
         embedder: Any = None,
+        llm: Any = None,
         data_dir: Path | None = None,
     ) -> None:
         self.rules = rules
         self.config = config
         self.corpus = corpus
         self.embedder = embedder
+        self.llm = llm
         self.data_dir = data_dir
 
     def _corpus(self) -> AttackCorpus:
@@ -323,30 +421,65 @@ class InjectionGuard:
             config = InjectionConfig.from_policy(ctx.policy, config)
         scan = ctx.scan if ctx.scan is not None else normalize(ctx.text)
         rs = await asyncio.to_thread(score_rules, scan, self.rules)
-        scores = {"rules": rs.score}
-        detail: dict[str, Any] = {"rule_ids": rs.rule_ids}
+        scores: dict[str, float] = {"rules": rs.score}
+        detail: dict[str, Any] = {"rule_ids": rs.rule_ids, "path": "rules"}
+        cost: dict[str, Any] = {"cost_usd": 0.0, "tokens_in": 0, "tokens_out": 0}
 
-        def verdict(action: Action, reasons: list[str]) -> Verdict:
+        def verdict(action: Action, reasons: list[str], path: str) -> Verdict:
+            detail["path"] = path
             return Verdict(
-                guard=self.name, action=action, reasons=reasons, scores=scores, detail=detail
-            )
+                guard=self.name, action=action, reasons=reasons, scores=scores, detail=detail,
+                **cost,
+            )  # fmt: skip
 
+        # Layer 1
         if rs.score >= 1.0:
             reasons = [Reason.inj_rule(c) for c in rs.categories]
             if rs.from_decoded:
                 reasons.append(Reason.INJ_OBFUSCATION)
-            return verdict(Action.BLOCK, reasons)
+            return verdict(Action.BLOCK, reasons, "rules_block")
 
+        # Layer 2
+        combined = rs.score
+        embed_failed = False
         embedder = ctx.embedder or self.embedder
         if config.use_embeddings and embedder is not None:
             try:
-                es = await score_embeddings(scan, embedder, self._corpus(), config.benign_lambda)
-            except Exception as exc:  # noqa: BLE001
-                # Spec 7.5: escalate to the LLM layer; until Task 11 adds it, fail closed.
+                es = await asyncio.wait_for(
+                    score_embeddings(scan, embedder, self._corpus(), config.benign_lambda),
+                    _timeout(ctx.policy, "injection_embed"),
+                )
+            except Exception as exc:  # noqa: BLE001 - escalate, never silently allow
+                embed_failed = True
                 detail["embed_unavailable"] = type(exc).__name__
-                return verdict(Action.BLOCK, [Reason.GUARD_ERROR])
-            scores |= {"embed": es.score, "s_attack": es.s_attack, "s_benign": es.s_benign}
-            detail["nearest_category"] = es.nearest_category
-            if es.score >= config.t_block:
-                return verdict(Action.BLOCK, [Reason.INJ_EMBED])
-        return verdict(Action.ALLOW, [])
+            else:
+                scores |= {"embed": es.score, "s_attack": es.s_attack, "s_benign": es.s_benign}
+                detail["nearest_category"] = es.nearest_category
+                if es.score >= config.t_block:
+                    return verdict(Action.BLOCK, [Reason.INJ_EMBED], "embed_block")
+                combined = max(combined, es.score)
+
+        if combined < config.t_allow and not embed_failed:
+            return verdict(Action.ALLOW, [], "below_t_allow")
+
+        # Grey zone (or no embedding evidence): layer 3
+        llm = ctx.llm or self.llm
+        if not (config.use_llm and llm is not None):
+            if embed_failed:
+                return verdict(Action.BLOCK, [Reason.GUARD_ERROR], "no_evidence_fail_closed")
+            return verdict(Action.ALLOW, [], "grey_zone_no_classifier")
+        try:
+            ls = await asyncio.wait_for(
+                score_llm(ctx.text, scan.decoded, llm), _timeout(ctx.policy, "injection_llm")
+            )
+        except TimeoutError:
+            return verdict(Action.BLOCK, [Reason.GUARD_TIMEOUT], "llm_timeout_fail_closed")
+        except Exception as exc:  # noqa: BLE001 - includes SchemaValidationFailed
+            detail["llm_error"] = type(exc).__name__
+            return verdict(Action.BLOCK, [Reason.GUARD_ERROR], "llm_error_fail_closed")
+        scores["llm"] = ls.score
+        detail |= {"llm_label": ls.label, "llm_category": ls.category, "llm_attempts": ls.attempts}
+        cost.update(cost_usd=ls.cost_usd, tokens_in=ls.tokens_in, tokens_out=ls.tokens_out)
+        if ls.score >= config.t_llm:
+            return verdict(Action.BLOCK, [Reason.INJ_LLM], "llm_block")
+        return verdict(Action.ALLOW, [], "llm_allow")
