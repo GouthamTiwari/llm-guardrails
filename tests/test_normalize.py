@@ -169,3 +169,10 @@ def test_every_seed_row_normalises(row) -> None:
     out = normalize(row["text"])
     assert out.clean.strip()
     assert out.scan.strip()
+
+
+def test_urls_and_emails_are_not_leet_folded() -> None:
+    out = normalize("send it to attacker@example.com or https://x1.example/a?b=3 and 1gn0re")
+    assert "attacker@example.com" in out.scan
+    assert "https://x1.example/a?b=3" in out.scan
+    assert "ignore" in out.scan

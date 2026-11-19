@@ -9,3 +9,4 @@ One line per merged task: date, task, summary. Details live in `docs/changelogs/
 - 2026-11-19 · 05 pii-guard · per-type block/redact/allow, consistent typed placeholders, spoof-proof restore, salted hashes and an allow-listed audit record; dump test proves no seed PII value reaches any log or report.
 - 2026-11-19 · 06 llm-clients · price table, persistent USD 5 spend cap, Bedrock Converse + Titan clients (stub-tested), fakes, record/replay for offline evals; first live calls cost $0.000025.
 - 2026-11-19 · 07 policy-guard · size limits first, denied actions on the scan text (obfuscation-proof), topic allow-list with Hindi/Hinglish keywords, tool-call gate for agents.
+- 2026-11-19 · 08 injection-rules · 48 multilingual rules (37 strong, 11 weak) each with must-match and must-not-match examples, rule scoring with obfuscation signals, speed-tested regexes; normaliser no longer folds URLs/emails.

@@ -50,6 +50,9 @@ _LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t
                        "$": "s"})  # fmt: skip
 _LEET_CHARS = frozenset("013457@$")
 _TOKEN = re.compile(r"\S+")
+# URLs and email addresses keep their digits and "@": folding them would turn
+# "attacker@example.com" into "attackeraexample.com" and hide it from exfiltration rules.
+_URL_OR_EMAIL = re.compile(r"://|^www\.|[^\s@]@[^\s@]+\.[a-z]{2,}", re.IGNORECASE)
 
 # Step 7: "s y s t e m", "s.y.s.t.e.m", "s-y-s-t-e-m" (4+ single letters).
 _SPACED = re.compile(r"(?<!\S)(?:[a-z] {1,2}){3,}[a-z](?!\S)")
@@ -119,6 +122,8 @@ def _fold_leet(text: str, flags: set[str]) -> str:
     def fix(match: re.Match[str]) -> str:
         token = match.group(0)
         if not any(ch.isalpha() for ch in token) or not any(ch in _LEET_CHARS for ch in token):
+            return token
+        if _URL_OR_EMAIL.search(token):
             return token
         folded = token.translate(_LEET)
         if folded != token:
