@@ -345,9 +345,9 @@ class ContextGuard:
             config = InjectionConfig.from_policy(policy, config)
         on_injection = policy.context.on_injection if policy is not None else "strip_line"
         use_llm = bool(policy.context.llm_classifier) if policy is not None else False
-        embedder = ctx.embedder or self.embedder
+        embedder = ctx.embedder if ctx.embedder is not None else self.embedder
         corpus = self._corpus() if (config.use_embeddings and embedder is not None) else None
-        llm = ctx.llm or self.llm
+        llm = ctx.llm if ctx.llm is not None else self.llm
 
         semaphore = asyncio.Semaphore(DOC_CONCURRENCY)
 

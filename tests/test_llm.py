@@ -184,6 +184,11 @@ def test_request_key_does_not_mask_hex_outside_markers() -> None:
     assert _key("‹‹‹TEXT 1a2b3c4d›››") != _key("‹‹‹TEXT 99887766›››")
 
 
+def test_an_empty_recorder_is_still_a_client(tmp_path) -> None:
+    replay = RecordingLLM(tmp_path / "none.jsonl", mode="replay", model_id="m")
+    assert len(replay) == 0 and bool(replay) is True  # `llm or fallback` must keep it
+
+
 def test_record_mode_needs_a_real_client(tmp_path) -> None:
     with pytest.raises(ValueError):
         RecordingLLM(tmp_path / "x.jsonl", mode="record")

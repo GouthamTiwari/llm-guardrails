@@ -698,9 +698,10 @@ class GroundingGuard:
             else ENTAILMENT_TIMEOUT_S
         )
 
+        llm = ctx.llm if ctx.llm is not None else self.llm
         result = await check_grounding_async(
             ctx.output, ctx.sources, mode=mode, min_overlap=min_overlap,
-            entailment=entailment, llm=ctx.llm or self.llm, timeout_s=timeout_s,
+            entailment=entailment, llm=llm, timeout_s=timeout_s,
         )  # fmt: skip
         factual = [s for s in result.sentences if s.kind == "factual"]
         overlaps = [s.overlap for s in factual if s.overlap is not None]

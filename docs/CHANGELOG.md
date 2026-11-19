@@ -20,3 +20,4 @@ One line per merged task: date, task, summary. Details live in `docs/changelogs/
 - 2026-11-19 · 14 live check · Nova judge labelled supported / contradicted / not_enough_info as intended; USD 0.000775.
 - 2026-11-19 · 15 leak · output scan: canary (plain/spaced/reversed/base64), 8-word system-prompt fragments, secret patterns, output PII, image/link exfiltration with IDNA allow-list; canary masked in replay keys (decision 9).
 - 2026-11-19 · 16 pipeline · guards composed around one model call (document PII, rescan, canary, schema or grounding, leak, restore), every step fail-closed with timeouts, one audit line + Prometheus metrics per request; placeholders no longer read as citations (decision 10).
+- 2026-11-19 · 17 api-cli · FastAPI endpoints (block = 200, 422 names fields only, bare 500), Typer CLI with check/serve/spend and later-task stubs, fake/replay/bedrock runtime; fixed empty-recorder fail-open and ignored log salt (decision 11).

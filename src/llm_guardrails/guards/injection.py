@@ -442,7 +442,7 @@ class InjectionGuard:
         # Layer 2
         combined = rs.score
         embed_failed = False
-        embedder = ctx.embedder or self.embedder
+        embedder = ctx.embedder if ctx.embedder is not None else self.embedder
         if config.use_embeddings and embedder is not None:
             try:
                 es = await asyncio.wait_for(
@@ -463,7 +463,7 @@ class InjectionGuard:
             return verdict(Action.ALLOW, [], "below_t_allow")
 
         # Grey zone (or no embedding evidence): layer 3
-        llm = ctx.llm or self.llm
+        llm = ctx.llm if ctx.llm is not None else self.llm
         if not (config.use_llm and llm is not None):
             if embed_failed:
                 return verdict(Action.BLOCK, [Reason.GUARD_ERROR], "no_evidence_fail_closed")

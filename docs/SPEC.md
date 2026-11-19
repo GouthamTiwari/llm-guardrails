@@ -808,3 +808,12 @@ Training classifiers; toxicity/hate-speech moderation (future); image or audio g
     - (e) **Placeholders aren't citations.** `[EMAIL_1]` is content, not a citation, and `SourceDoc` ids may not take that shape (`EMAIL_1`).
     - (f) **Internal steps in reports.** Document redaction (`pii_docs`), the model call (`model`), the request deadline (`request`) and a post-restore schema re-check (`finalize`) appear in reports as their own verdicts. They always fail closed, whatever the policy's fail-mode table says (it only lists the eight guards).
     - (g) **Metrics.** Metrics are derived from the finished report; `guardrails_llm_cost_usd_total{purpose}` uses the step name as the purpose.
+11. **2026-11-19: API and CLI details (Task 17).**
+    - (a) **`runtime.py` builds the clients for each mode.**
+      - `fake` uses a deterministic stand-in: it answers with the first sentence of the first document and cites it, its classifier says benign, and its judge says supported. Embedding similarity is off in fake mode, because its corpus vectors are Titan's.
+      - `replay` answers from `data/recordings/runtime.jsonl`, and a call with no recording fails closed. The CLI says when that happened.
+      - `bedrock` refuses to start without credentials.
+    - (b) **The API's 422 body is `{error: "invalid_request", fields: [...]}`.** It names fields and never echoes values, because FastAPI's default 422 echoes the input, which can hold PII. Only bundled policy names are accepted, never a file path. Clients may request `TicketSummary` only; the judge schemas are internal.
+    - (c) **CLI exit codes:** 0 allowed, 1 blocked, 2 usage error or a command a later task implements.
+    - (d) **Hash salt.** `Pipelines` applies `LOG_HASH_SALT` from settings. Before this, the salt was read only from the process environment, so a `.env` salt was ignored and hash prefixes were not comparable across runs.
+    - (e) **Empty recorder bug fixed.** An empty `RecordingLLM` was falsy (it defines `__len__`), so `ctx.llm or self.llm` silently fell back to "no classifier", and a grey-zone input was allowed instead of failing closed. Recorders are now always truthy, and guards choose clients with `is not None` checks.

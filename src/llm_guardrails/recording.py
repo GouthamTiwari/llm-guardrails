@@ -104,6 +104,12 @@ class RecordingLLM:
     def __len__(self) -> int:
         return len(self._entries)
 
+    def __bool__(self) -> bool:
+        # With __len__ defined, an EMPTY recorder would be falsy, and `llm or fallback`
+        # would silently drop it: the injection guard then saw "no classifier" and allowed a
+        # grey-zone input instead of failing closed. A client object is always "present".
+        return True
+
     def ensure_complete(self) -> None:
         """Raise ReplayMissing if any call during the run had no recording."""
         if self.missing:
