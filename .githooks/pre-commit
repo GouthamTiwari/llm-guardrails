@@ -1,0 +1,13 @@
+#!/bin/sh
+# Rejects a commit if the git identity is not Goutham Tiwari.
+. "$(dirname "$0")/_check.sh"
+want="$OWNER_NAME <$OWNER_EMAIL>"
+a=$(git var GIT_AUTHOR_IDENT | sed 's/ [0-9]* [+-][0-9]*$//')
+c=$(git var GIT_COMMITTER_IDENT | sed 's/ [0-9]* [+-][0-9]*$//')
+if [ "$a" != "$want" ] || [ "$c" != "$want" ]; then
+  echo "Blocked: git identity is author '$a' / committer '$c'." >&2
+  echo "Expected '$want'. Run:" >&2
+  echo "  git config user.name \"$OWNER_NAME\" && git config user.email \"$OWNER_EMAIL\"" >&2
+  echo "and unset any GIT_AUTHOR_* / GIT_COMMITTER_* variables that say otherwise." >&2
+  exit 1
+fi

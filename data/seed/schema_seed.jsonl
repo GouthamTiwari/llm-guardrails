@@ -1,0 +1,10 @@
+{"id": "sch001", "input": "Customer says the app crashed twice when paying, wants a call back tomorrow, very angry.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch002", "input": "refund not received since 3 weeks!!! order 8812. fix asap", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch003", "input": "Minor typo on the invoice PDF, no rush.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch004", "input": "Login fails only on iPhone 12, works on Android. Started after the update.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch005", "input": "Please add dark mode. Not urgent. Ideas: auto switch at night, per-app setting.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch006", "input": "URGENT: payment gateway down, all UPI transactions failing since 10:05. Finance team waiting.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch007", "input": "Two accounts merged by mistake; need split. Customer is polite, deadline end of month.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch008", "input": "Spelling: 'Recieve' on the receipt page. Also the footer link is broken.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch009", "input": "Statement download gives a blank file. Happens for FY 2024-25 only.", "target_schema": "TicketSummary", "notes": ""}
+{"id": "sch010", "input": "", "target_schema": "TicketSummary", "notes": "empty input must produce a valid refusal object, not invalid JSON"}

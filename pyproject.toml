@@ -1,0 +1,55 @@
+[project]
+name = "llm-guardrails"
+version = "0.1.0"
+description = "Layered guardrails for LLM apps: prompt-injection and Indian-ID PII screening, schema validation with retries, and grounding checks."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Goutham Tiwari", email = "227244284+GouthamTiwari@users.noreply.github.com" }]
+dependencies = [
+    "pydantic>=2.9",
+    "pyyaml>=6.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+    "boto3>=1.40",
+    "numpy>=2.1",
+    "prometheus-client>=0.21",
+    "httpx>=0.28",
+    "typer>=0.15",
+]
+
+[project.scripts]
+guardrails = "llm_guardrails.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "hypothesis>=6.120",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_guardrails"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# tests/reference and data/seed are kept byte-for-byte from the kit: they are the
+# checksum test oracle and the seed generator, so the linter must not rewrite them.
+extend-exclude = ["_kit", "tests/reference", "data/seed", "*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not live'"
+asyncio_mode = "auto"
+markers = [
+    "live: makes real (paid) Bedrock calls; run with -m live",
+]

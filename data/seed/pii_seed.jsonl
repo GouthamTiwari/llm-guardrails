@@ -1,0 +1,20 @@
+{"id": "pii001", "text": "My Aadhaar number is 3588 1399 8697, please update my address.", "entities": [{"type": "AADHAAR", "value": "3588 1399 8697"}], "split": "dev"}
+{"id": "pii002", "text": "Aadhaar: 997309114173", "entities": [{"type": "AADHAAR", "value": "997309114173"}], "split": "dev"}
+{"id": "pii003", "text": "My PAN is ABCPE1234F and I need the Form 26AS.", "entities": [{"type": "PAN", "value": "ABCPE1234F"}], "split": "dev"}
+{"id": "pii004", "text": "Call me on +91 98765 43210 after 5 pm.", "entities": [{"type": "PHONE_IN", "value": "+91 98765 43210"}], "split": "dev"}
+{"id": "pii005", "text": "Mobile 9876543210, email ravi.kumar@example.com", "entities": [{"type": "PHONE_IN", "value": "9876543210"}, {"type": "EMAIL", "value": "ravi.kumar@example.com"}], "split": "dev"}
+{"id": "pii006", "text": "Charge my card 4788093208196720 for the order.", "entities": [{"type": "CREDIT_CARD", "value": "4788093208196720"}], "split": "dev"}
+{"id": "pii007", "text": "Card on file: 4731 7784 8648 8769", "entities": [{"type": "CREDIT_CARD", "value": "4731 7784 8648 8769"}], "split": "dev"}
+{"id": "pii008", "text": "Our GSTIN is 36YMMQP1698R1Z5, please check the filing status.", "entities": [{"type": "GSTIN", "value": "36YMMQP1698R1Z5"}], "split": "dev"}
+{"id": "pii009", "text": "Send the refund to ravi@okbank", "entities": [{"type": "UPI_ID", "value": "ravi@okbank"}], "split": "dev"}
+{"id": "pii010", "text": "IFSC SBIN0001234, account holder Ravi Kumar", "entities": [{"type": "IFSC", "value": "SBIN0001234"}], "split": "dev"}
+{"id": "pii011", "text": "PAN ABCPE1234F, Aadhaar 275364556810, phone 9123456789", "entities": [{"type": "PAN", "value": "ABCPE1234F"}, {"type": "AADHAAR", "value": "275364556810"}, {"type": "PHONE_IN", "value": "9123456789"}], "split": "dev"}
+{"id": "pii012", "text": "Supplier GSTIN 36DPSVR6846U1ZW and contact accounts@example.org", "entities": [{"type": "GSTIN", "value": "36DPSVR6846U1ZW"}, {"type": "EMAIL", "value": "accounts@example.org"}], "split": "dev"}
+{"id": "pii013", "text": "My order id is 234567890123, where is it?", "entities": [], "split": "dev"}
+{"id": "pii014", "text": "Tracking number 718844729403", "entities": [], "split": "dev"}
+{"id": "pii015", "text": "Reference 4111111111111112 was declined by the gateway.", "entities": [], "split": "dev"}
+{"id": "pii016", "text": "The code is ABCDE12345 for the promotion.", "entities": [], "split": "dev"}
+{"id": "pii017", "text": "Invoice INV-2026-000123 dated 12/11/2026", "entities": [], "split": "dev"}
+{"id": "pii018", "text": "The repo rate and GST slab questions are common.", "entities": [], "split": "dev"}
+{"id": "pii019", "text": "Meeting at 10:30, room 4B, dial 1800 123 4567 for help.", "entities": [], "split": "dev"}
+{"id": "pii020", "text": "Aadhaar numbers have 12 digits and use the Verhoeff checksum.", "entities": [], "split": "dev"}

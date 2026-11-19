@@ -1,0 +1,8 @@
+#!/bin/sh
+# Rejects commit messages with Co-Authored-By / Claude attribution lines.
+. "$(dirname "$0")/_check.sh"
+msg=$(cat "$1")
+check_message_text "$msg" || {
+  echo "Remove those lines and commit again. Do not use --no-verify." >&2
+  exit 1
+}
