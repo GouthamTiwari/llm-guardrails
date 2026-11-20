@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-20T17:49:35+00:00",
-  "git_sha": "8a11c7f",
+  "generated_at": "2026-11-20T18:30:57+00:00",
+  "git_sha": "756ac47",
   "dataset_sha256": {
     "injection.jsonl": "1b40a1242536c6d2ced1d447fd72647852f8000b634d8fd2900e7d60fc7d6b98",
     "attack_corpus.jsonl": "98564a1502247f4fbedc2ca0d5e191eba3f5ad7728737afaaf10daa2fb997fba",

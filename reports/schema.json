@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-11-20T18:30:57+00:00",
+  "git_sha": "756ac47",
+  "dataset_sha256": {
+    "schema_inputs.jsonl": "09aadc1b5a0ee915754436ce30a91685740c89acba9d77503c222512f013febf"
+  },
+  "operating_point": null,
+  "mode": "replay",
+  "spend_usd": 0.132137,
+  "styles": {
+    "plain": {
+      "inputs": 105,
+      "first_try_validity": {
+        "k": 0,
+        "n": 105,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.0353
+        ]
+      },
+      "final_validity": {
+        "k": 0,
+        "n": 105,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.0353
+        ]
+      },
+      "mean_retries": 0.0,
+      "extra_tokens_per_input": 0.0,
+      "extra_usd_per_input": 0.0,
+      "usd_per_input": 0.00072173,
+      "added_latency_ms_when_retried": {
+        "p50": null,
+        "p95": null,
+        "inputs_retried": 0
+      },
+      "first_attempt_errors": {
+        "missing_field": 97,
+        "no_json": 4,
+        "truncated": 4
+      },
+      "refused_when_it_should": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "ci95": [
+          0.0,
+          1.0
+        ]
+      },
+      "ticket_when_it_should": {
+        "k": 0,
+        "n": 0,
+        "rate": null,
+        "ci95": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "schema": {
+      "inputs": 105,
+      "first_try_validity": {
+        "k": 100,
+        "n": 105,
+        "rate": 0.9524,
+        "ci95": [
+          0.8933,
+          0.9795
+        ]
+      },
+      "final_validity": {
+        "k": 100,
+        "n": 105,
+        "rate": 0.9524,
+        "ci95": [
+          0.8933,
+          0.9795
+        ]
+      },
+      "mean_retries": 0.0,
+      "extra_tokens_per_input": 0.0,
+      "extra_usd_per_input": 0.0,
+      "usd_per_input": 0.00050088,
+      "added_latency_ms_when_retried": {
+        "p50": null,
+        "p95": null,
+        "inputs_retried": 0
+      },
+      "first_attempt_errors": {
+        "constraint": 5
+      },
+      "refused_when_it_should": {
+        "k": 20,
+        "n": 20,
+        "rate": 1.0,
+        "ci95": [
+          0.8389,
+          1.0
+        ]
+      },
+      "ticket_when_it_should": {
+        "k": 80,
+        "n": 80,
+        "rate": 1.0,
+        "ci95": [
+          0.9542,
+          1.0
+        ]
+      }
+    },
+    "schema_retry": {
+      "inputs": 105,
+      "first_try_validity": {
+        "k": 100,
+        "n": 105,
+        "rate": 0.9524,
+        "ci95": [
+          0.8933,
+          0.9795
+        ]
+      },
+      "final_validity": {
+        "k": 105,
+        "n": 105,
+        "rate": 1.0,
+        "ci95": [
+          0.9647,
+          1.0
+        ]
+      },
+      "mean_retries": 0.0476,
+      "extra_tokens_per_input": 78.33,
+      "extra_usd_per_input": 3.584e-05,
+      "usd_per_input": 0.00053671,
+      "added_latency_ms_when_retried": {
+        "p50": 3198.4,
+        "p95": 3775.1,
+        "inputs_retried": 5
+      },
+      "first_attempt_errors": {
+        "constraint": 5
+      },
+      "refused_when_it_should": {
+        "k": 20,
+        "n": 20,
+        "rate": 1.0,
+        "ci95": [
+          0.8389,
+          1.0
+        ]
+      },
+      "ticket_when_it_should": {
+        "k": 85,
+        "n": 85,
+        "rate": 1.0,
+        "ci95": [
+          0.9568,
+          1.0
+        ]
+      }
+    }
+  }
+}

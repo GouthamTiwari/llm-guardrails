@@ -68,7 +68,7 @@ grounding:
   enabled: true
   mode: reject
   entailment: optional
-  min_overlap: 0.5
+  min_overlap: 0.8   # dev sweep, reports/grounding_operating_point.json (Task 20)
 
 leak:
   allowed_domains: [rbi.org.in, gst.gov.in, incometax.gov.in]

@@ -63,3 +63,34 @@ async def test_external_numbers_survive_without_the_raw_file(reports_copy, monke
         _load(reports_copy / "injection.json")["external"]
         == _load(REPORTS_DIR / "injection.json")["external"]
     )
+
+
+async def test_schema_report_reproduces(tmp_path) -> None:
+    from llm_guardrails.eval import run_schema
+
+    await run_schema.run(live=False, settings=load_settings(env_file=None), reports_dir=tmp_path)
+    assert stable(_load(tmp_path / "schema.json")) == stable(_load(REPORTS_DIR / "schema.json"))
+    assert (tmp_path / "schema.md").read_text("utf-8") == (REPORTS_DIR / "schema.md").read_text(
+        "utf-8"
+    )
+
+
+async def test_grounding_report_reproduces(tmp_path) -> None:
+    from llm_guardrails.eval import run_grounding
+
+    shutil.copy(REPORTS_DIR / run_grounding.OPERATING_POINT, tmp_path)
+    await run_grounding.run(live=False, settings=load_settings(env_file=None), reports_dir=tmp_path)
+    assert stable(_load(tmp_path / "grounding.json")) == stable(
+        _load(REPORTS_DIR / "grounding.json")
+    )
+
+
+async def test_e2e_numbers_reproduce(tmp_path) -> None:
+    """Every e2e number except local wall-clock timings (which measure the machine)."""
+    from llm_guardrails.eval import run_e2e
+
+    shutil.copy(REPORTS_DIR / "e2e.json", tmp_path)  # keeps the committed live sample
+    await run_e2e.run(live=False, settings=load_settings(env_file=None), reports_dir=tmp_path)
+    new, old = stable(_load(tmp_path / "e2e.json")), stable(_load(REPORTS_DIR / "e2e.json"))
+    new.pop("local_latency_ms"), old.pop("local_latency_ms")
+    assert new == old

@@ -233,6 +233,19 @@ def download_external(path: Path = EXTERNAL_RAW) -> int:
 # ----------------------------------------------------------------------------- run
 
 
+def recorder(path: Path, *, live: bool, settings: Any, also_read: tuple[Path, ...] = ()):
+    """A model client for evals: records real Bedrock calls with --live, replays otherwise.
+    `also_read` lets one eval replay calls another eval already recorded (no double paying)."""
+    from llm_guardrails.llm import BedrockLLM
+    from llm_guardrails.recording import RecordingLLM
+    from llm_guardrails.spend import SpendLedger
+
+    if live:
+        inner = BedrockLLM(settings, ledger=SpendLedger(limit_usd=settings.live_budget_usd))
+        return RecordingLLM(path, mode="record", inner=inner, also_read=also_read)
+    return RecordingLLM(path, mode="replay", model_id=settings.chat_model_id, also_read=also_read)
+
+
 def _clients(live: bool, recordings: Path, vectors: Path, settings: Any):
     from llm_guardrails.embeddings import RecordedEmbedder, TitanEmbedder, VectorBundle
     from llm_guardrails.llm import BedrockLLM

@@ -81,7 +81,13 @@ def request_key(
 
 class RecordingLLM:
     def __init__(
-        self, path: Path | str, *, mode: Mode, inner: LLMClient | None = None, model_id: str = ""
+        self,
+        path: Path | str,
+        *,
+        mode: Mode,
+        inner: LLMClient | None = None,
+        model_id: str = "",
+        also_read: Sequence[Path | str] = (),
     ) -> None:
         if mode == "record" and inner is None:
             raise ValueError("record mode needs a real client to record from")
@@ -95,11 +101,14 @@ class RecordingLLM:
         # inside one becomes a quiet BLOCK and would change eval numbers without anyone
         # noticing; the eval runner calls ensure_complete() after a run to catch that.
         self.missing: list[str] = []
-        if self.path.is_file():
-            for line in self.path.read_text(encoding="utf-8").splitlines():
-                if line.strip():
-                    row = json.loads(line)
-                    self._entries[row["key"]] = row
+        # Read-only extra files first, then this recorder's own file. New recordings are only
+        # ever appended to `path`.
+        for source in [*map(Path, also_read), self.path]:
+            if source.is_file():
+                for line in source.read_text(encoding="utf-8").splitlines():
+                    if line.strip():
+                        row = json.loads(line)
+                        self._entries[row["key"]] = row
 
     def __len__(self) -> int:
         return len(self._entries)

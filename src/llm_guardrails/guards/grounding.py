@@ -48,7 +48,7 @@ from llm_guardrails.types import (
 
 # The fixed answer used when strip mode removes every factual sentence (spec 11.5).
 ABSTENTION = "I could not find this in the provided documents."
-DEFAULT_MIN_OVERLAP = 0.5
+DEFAULT_MIN_OVERLAP = 0.8  # Task 20 dev sweep (reports/grounding_operating_point.json)
 
 Mode = Literal["reject", "strip"]
 Kind = Literal["factual", "abstention", "non_factual"]
@@ -397,6 +397,7 @@ class GroundingResult:
     cost_usd: float = 0.0
     tokens_in: int = 0
     tokens_out: int = 0
+    judge_latency_ms: float = 0.0  # summed model time of the judge calls
 
     def sentence_outcomes(self) -> list[dict[str, object]]:
         """What may be logged: index, class, outcome and judge label. Never the text."""
@@ -519,6 +520,7 @@ class Judgement:
     cost_usd: float = 0.0
     tokens_in: int = 0
     tokens_out: int = 0
+    latency_ms: float = 0.0  # model time as reported (recorded time when replaying)
 
 
 async def judge_sentence(llm: Any, sentence: str, docs: list[SourceDoc]) -> Judgement:
@@ -543,6 +545,7 @@ async def judge_sentence(llm: Any, sentence: str, docs: list[SourceDoc]) -> Judg
             cost_usd=sum(a.cost_usd for a in e.trace),
             tokens_in=sum(a.tokens_in for a in e.trace),
             tokens_out=sum(a.tokens_out for a in e.trace),
+            latency_ms=sum(a.latency_ms for a in e.trace),
         )
     return Judgement(
         result.value.label,
@@ -550,6 +553,7 @@ async def judge_sentence(llm: Any, sentence: str, docs: list[SourceDoc]) -> Judg
         cost_usd=result.cost_usd,
         tokens_in=result.tokens_in,
         tokens_out=result.tokens_out,
+        latency_ms=result.latency_ms,
     )
 
 
@@ -632,6 +636,7 @@ async def check_grounding_async(
                 usage.cost_usd += j.cost_usd
                 usage.tokens_in += j.tokens_in
                 usage.tokens_out += j.tokens_out
+                usage.latency_ms += j.latency_ms
             status = UNAVAILABLE if any(r.entailment == UNAVAILABLE for r in to_judge) else "used"
 
     result = _decide(answer, split, results, mode)
@@ -648,6 +653,7 @@ async def check_grounding_async(
     result.cost_usd = usage.cost_usd
     result.tokens_in = usage.tokens_in
     result.tokens_out = usage.tokens_out
+    result.judge_latency_ms = usage.latency_ms
     return result
 
 

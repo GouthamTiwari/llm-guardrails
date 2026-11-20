@@ -1,0 +1,325 @@
+{
+  "generated_at": "2026-11-20T18:32:01+00:00",
+  "git_sha": "756ac47",
+  "dataset_sha256": {
+    "injection.jsonl": "1b40a1242536c6d2ced1d447fd72647852f8000b634d8fd2900e7d60fc7d6b98",
+    "pii.jsonl": "242d2d4714d548e8f5f30868cc981723743dd25e9e6afae49376cb43e23afc1b",
+    "grounding.jsonl": "a2f85d2df05b1ede82e34618e9e46cbd5ad0f53af21e41136ba7281e9f18839a"
+  },
+  "operating_point": null,
+  "mode": "replay",
+  "spend_usd": 0.079195,
+  "requests": 432,
+  "decision_matches_label": {
+    "k": 415,
+    "n": 432,
+    "rate": 0.9606,
+    "ci95": [
+      0.9379,
+      0.9753
+    ]
+  },
+  "injection": {
+    "attacks_blocked": {
+      "k": 97,
+      "n": 100,
+      "rate": 0.97,
+      "ci95": [
+        0.9155,
+        0.9897
+      ]
+    },
+    "benign_blocked": {
+      "k": 6,
+      "n": 102,
+      "rate": 0.0588,
+      "ci95": [
+        0.0272,
+        0.1224
+      ]
+    },
+    "benign_blocked_by": {
+      "injection": 6
+    }
+  },
+  "compromised_model": {
+    "attacks_that_reached_the_model": 3,
+    "caught_at_output": {
+      "k": 3,
+      "n": 3,
+      "rate": 1.0,
+      "ci95": [
+        0.4385,
+        1.0
+      ]
+    },
+    "caught_by": {
+      "grounding": 3
+    }
+  },
+  "pii": {
+    "requests": 147,
+    "raw_pii_reached_model": {
+      "k": 0,
+      "n": 63,
+      "rate": 0.0,
+      "ci95": [
+        0.0,
+        0.0575
+      ]
+    },
+    "raw_pii_in_answer": {
+      "k": 0,
+      "n": 63,
+      "rate": 0.0,
+      "ci95": [
+        0.0,
+        0.0575
+      ]
+    },
+    "blocked_when_policy_says_block": {
+      "k": 11,
+      "n": 11,
+      "rate": 1.0,
+      "ci95": [
+        0.7412,
+        1.0
+      ]
+    },
+    "blocked_otherwise": {
+      "k": 3,
+      "n": 136,
+      "rate": 0.0221,
+      "ci95": [
+        0.0075,
+        0.0628
+      ]
+    }
+  },
+  "grounding": {
+    "reject_precision": {
+      "k": 59,
+      "n": 60,
+      "rate": 0.9833,
+      "ci95": [
+        0.9114,
+        0.9971
+      ]
+    },
+    "reject_recall": {
+      "k": 59,
+      "n": 63,
+      "rate": 0.9365,
+      "ci95": [
+        0.8478,
+        0.975
+      ]
+    },
+    "good_answers_passed": {
+      "k": 19,
+      "n": 20,
+      "rate": 0.95,
+      "ci95": [
+        0.7639,
+        0.9911
+      ]
+    }
+  },
+  "per_guard": {
+    "context": {
+      "runs": 315,
+      "usd_per_1000_requests": 0.0
+    },
+    "grounding": {
+      "runs": 315,
+      "usd_per_1000_requests": 0.0
+    },
+    "injection": {
+      "runs": 420,
+      "usd_per_1000_requests": 0.183321
+    },
+    "leak": {
+      "runs": 255,
+      "usd_per_1000_requests": 0.0
+    },
+    "model": {
+      "runs": 315,
+      "usd_per_1000_requests": 0.0
+    },
+    "normalize": {
+      "runs": 432,
+      "usd_per_1000_requests": 0.0
+    },
+    "pii": {
+      "runs": 432,
+      "usd_per_1000_requests": 0.0
+    },
+    "pii_docs": {
+      "runs": 420,
+      "usd_per_1000_requests": 0.0
+    },
+    "policy": {
+      "runs": 432,
+      "usd_per_1000_requests": 0.0
+    }
+  },
+  "local_latency_ms": {
+    "note": "model and embedding calls replayed: local compute only, varies by machine",
+    "end_to_end": {
+      "p50": 2.97,
+      "p95": 5.76
+    },
+    "per_guard": {
+      "context": {
+        "p50": 0.33,
+        "p95": 3.02
+      },
+      "grounding": {
+        "p50": 0.1,
+        "p95": 0.45
+      },
+      "injection": {
+        "p50": 1.1,
+        "p95": 1.42
+      },
+      "leak": {
+        "p50": 0.42,
+        "p95": 0.55
+      },
+      "model": {
+        "p50": 0.03,
+        "p95": 0.04
+      },
+      "normalize": {
+        "p50": 0.24,
+        "p95": 0.37
+      },
+      "pii": {
+        "p50": 0.21,
+        "p95": 0.31
+      },
+      "pii_docs": {
+        "p50": 0.35,
+        "p95": 0.58
+      },
+      "policy": {
+        "p50": 0.18,
+        "p95": 0.26
+      }
+    }
+  },
+  "context_ablation": {
+    "clean_docs": 40,
+    "poisoned_docs": 12,
+    "classifier_off": {
+      "poisoned_neutralised": {
+        "k": 2,
+        "n": 12,
+        "rate": 0.1667,
+        "ci95": [
+          0.047,
+          0.448
+        ]
+      },
+      "clean_changed": {
+        "k": 0,
+        "n": 40,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.0876
+        ]
+      },
+      "outcomes": {
+        "clean": {
+          "kept": 40
+        },
+        "poisoned": {
+          "kept": 10,
+          "stripped": 2
+        }
+      }
+    },
+    "classifier_on": {
+      "poisoned_neutralised": {
+        "k": 10,
+        "n": 12,
+        "rate": 0.8333,
+        "ci95": [
+          0.552,
+          0.953
+        ]
+      },
+      "clean_changed": {
+        "k": 0,
+        "n": 40,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.0876
+        ]
+      },
+      "outcomes": {
+        "clean": {
+          "kept": 40
+        },
+        "poisoned": {
+          "dropped": 8,
+          "kept": 2,
+          "stripped": 2
+        }
+      }
+    }
+  },
+  "live_latency": {
+    "requests": 30,
+    "wall_seconds": 31.6,
+    "end_to_end_ms": {
+      "p50": 747.71,
+      "p95": 2742.72
+    },
+    "per_guard_ms": {
+      "context": {
+        "p50": 1.59,
+        "p95": 3.16,
+        "runs": 20
+      },
+      "grounding": {
+        "p50": 0.55,
+        "p95": 0.82,
+        "runs": 20
+      },
+      "injection": {
+        "p50": 701.34,
+        "p95": 1133.47,
+        "runs": 30
+      },
+      "model": {
+        "p50": 921.62,
+        "p95": 1564.13,
+        "runs": 20
+      },
+      "normalize": {
+        "p50": 0.29,
+        "p95": 0.48,
+        "runs": 30
+      },
+      "pii": {
+        "p50": 0.27,
+        "p95": 0.43,
+        "runs": 30
+      },
+      "pii_docs": {
+        "p50": 0.46,
+        "p95": 0.67,
+        "runs": 30
+      },
+      "policy": {
+        "p50": 0.19,
+        "p95": 0.32,
+        "runs": 30
+      }
+    },
+    "note": "live Bedrock from ap-south-1 on a home connection; one sample, not a benchmark"
+  }
+}

@@ -131,7 +131,7 @@ class GroundingPolicy(_Strict):
     enabled: bool = True
     mode: Literal["reject", "strip"] = "reject"
     entailment: Literal["off", "optional", "required"] = "off"
-    min_overlap: float = Field(0.5, ge=0.0, le=1.0)
+    min_overlap: float = Field(0.8, ge=0.0, le=1.0)  # Task 20 dev sweep
 
 
 class LeakPolicy(_Strict):

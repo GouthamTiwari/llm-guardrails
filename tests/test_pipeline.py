@@ -217,7 +217,9 @@ async def test_answer_keeping_a_placeholder_is_not_a_fabricated_citation() -> No
     # Before the fix, grounding read [EMAIL_1] as a citation to a missing source.
     llm = bank_llm("The minimum monthly average balance is Rs 5,000, as we will confirm to "
                    "[EMAIL_1] [S1].")  # fmt: skip
-    result = await Pipeline(policy(), llm).run(f"Mail asha.verma@example.com: {QUESTION}", [S1])
+    p = policy()
+    p.grounding.min_overlap = 0.5  # this test is about citations, not paraphrase overlap
+    result = await Pipeline(p, llm).run(f"Mail asha.verma@example.com: {QUESTION}", [S1])
     assert result.decision == "allow", result.report.verdicts[-2].reasons
 
 

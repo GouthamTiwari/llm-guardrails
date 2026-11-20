@@ -127,8 +127,9 @@ def test_number_parser_does_not_read_these(text) -> None:
 
 def test_number_word_and_digits_compare_equal() -> None:
     src = SourceDoc(id="S9", text="Loans up to Rs 2,00,000 need no collateral.")
+    # min_overlap pinned: this test is about numbers, and "rupees" is an extra content word.
     assert check_sentence("Loans up to two lakh rupees need no collateral [S9].",
-                          {"S9": src})[0] == "supported"  # fmt: skip
+                          {"S9": src}, min_overlap=0.5)[0] == "supported"  # fmt: skip
 
 
 # ----------------------------------------------------------------------------- sentences
@@ -296,7 +297,9 @@ def test_quantifier_mismatch_and_zero_width_hiding() -> None:
     hidden = "Prepayment is free on ev​ery loan [S3]."
     assert check_sentence(hidden, SOURCES)[0] == Reason.GROUNDING_QUANTIFIER
     src = SourceDoc(id="S8", text="All branches are closed on Sundays.")
-    assert check_sentence("All branches close on Sundays [S8].", {"S8": src})[0] == "supported"
+    # min_overlap pinned: "close" vs "closed" is a paraphrase the stricter default rejects.
+    assert check_sentence("All branches close on Sundays [S8].", {"S8": src},
+                          min_overlap=0.5)[0] == "supported"  # fmt: skip
 
 
 def test_low_overlap_uses_min_overlap() -> None:
@@ -328,7 +331,7 @@ def test_strip_mode_removes_failing_sentences_and_keeps_layout() -> None:
     answer = (
         "Balance is Rs 5,000 [S1]. Disputes take 90 days [S2].\n- Refunds take 10 working days [S2]"
     )
-    result = check_grounding(answer, [S1, S2], mode="strip")
+    result = check_grounding(answer, [S1, S2], mode="strip", min_overlap=0.5)  # about layout
     assert result.action is Action.REDACT and result.outcome == "stripped"
     assert result.reasons == [Reason.GROUNDING_NUMBER]
     assert result.text == "Balance is Rs 5,000 [S1].\nRefunds take 10 working days [S2]"

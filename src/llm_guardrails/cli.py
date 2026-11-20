@@ -376,13 +376,6 @@ def dataset_apply_review(
 # ----------------------------------------------------------------------------- sweep
 
 
-def _sweep(kind: str, split: Split, task: str) -> None:
-    if split is Split.test:
-        # Tuning on the test split would make every reported number optimistic.
-        _fail("sweeps run on the dev split only; the test split is for the final eval")
-    _later(task, f"sweep {kind}")
-
-
 def _run_eval(coro_factory) -> dict:
     """Run an eval coroutine, turning a missing recording into a clear message."""
     from llm_guardrails.types import BudgetExceeded, ReplayMissing
@@ -410,11 +403,25 @@ def sweep_injection(split: SplitOption = Split.dev, live: Live = False) -> None:
 
 @sweep_app.command("grounding")
 def sweep_grounding(split: SplitOption = Split.dev) -> None:
-    """Choose min_overlap on dev."""
-    _sweep("grounding", split, "20")
+    """Choose min_overlap on dev (free: no model calls); writes the grounding operating point."""
+    if split is Split.test:
+        _fail("sweeps run on the dev split only; the test split is for the final eval")
+    from llm_guardrails.eval import run_grounding
+
+    point = run_grounding.run_sweep(REPORTS)
+    typer.echo(f"min_overlap {point['min_overlap']} (dev F1 {point['dev']['f1']})")
 
 
 # ----------------------------------------------------------------------------- eval
+
+E2EPart = Annotated[
+    str | None,
+    typer.Option(
+        "--part",
+        help="With --live: record one part (injection, pii, grounding, "
+        "context) so each paid run stays short.",
+    ),
+]
 
 
 @app.command("eval")
@@ -422,33 +429,79 @@ def eval_(
     suite: Annotated[EvalSuite, typer.Option("--suite", help="Which suite to run.")],
     live: Live = False,
     split: SplitOption = Split.test,
+    part: E2EPart = None,
+    live_latency: Annotated[
+        bool, typer.Option("--live-latency", help="e2e: add the 30-request live sample.")
+    ] = False,
 ) -> None:
     """Run an evaluation suite and write reports/ (replay by default: offline and free)."""
-    needs_operating_point = suite in (EvalSuite.injection, EvalSuite.all)
-    if needs_operating_point and not (REPORTS / "operating_point.json").is_file():
-        _fail("run `guardrails sweep injection` on dev first: the test eval uses the "
-              "thresholds it writes to reports/operating_point.json")  # fmt: skip
     if split is Split.dev:
-        _fail("reports are computed on the test split (each includes a dev reference); "
-              "tune on dev with `guardrails sweep`")  # fmt: skip
-    if suite in (EvalSuite.pii, EvalSuite.all):
+        _fail(
+            "reports are computed on the test split (each includes a dev reference); "
+            "tune on dev with `guardrails sweep`"
+        )
+    needs = {
+        EvalSuite.injection: "operating_point.json",
+        EvalSuite.grounding: "grounding_operating_point.json",
+    }
+    for s, name in needs.items():
+        if suite in (s, EvalSuite.all) and not (REPORTS / name).is_file():
+            _fail(
+                f"run `guardrails sweep {s.value}` on dev first: the test eval uses the "
+                f"value it writes to reports/{name}"
+            )
+    settings = _settings()
+    run_all = suite is EvalSuite.all
+    if suite is EvalSuite.pii or run_all:
         from llm_guardrails.eval import run_pii
 
         r = run_pii.run(reports_dir=REPORTS)
         typer.echo(f"pii: micro F1 {r['test']['shipped']['micro']['f1']} -> reports/pii.md")
-    if suite in (EvalSuite.injection, EvalSuite.all):
+    if suite is EvalSuite.injection or run_all:
         from llm_guardrails.eval import run_injection
 
-        settings = _settings()
-        r = _run_eval(lambda: run_injection.run(live=live, settings=settings,
-                                                reports_dir=REPORTS))  # fmt: skip
+        r = _run_eval(lambda: run_injection.run(live=live, settings=settings, reports_dir=REPORTS))
         shipped = r["test"]["layers"]["all"]
-        typer.echo(f"injection: recall {shipped['attack_recall']['rate']}, benign FPR "
-                   f"{shipped['benign_fpr']['rate']} -> reports/injection.md")  # fmt: skip
-    if suite not in (EvalSuite.pii, EvalSuite.injection, EvalSuite.all):
-        _later("20", f"eval --suite {suite.value}")
-    if suite is EvalSuite.all:
-        _later("20", "eval --suite schema/grounding/e2e")
+        typer.echo(
+            f"injection: recall {shipped['attack_recall']['rate']}, benign FPR "
+            f"{shipped['benign_fpr']['rate']} -> reports/injection.md"
+        )
+    if suite is EvalSuite.schema or run_all:
+        from llm_guardrails.eval import run_schema
+
+        r = _run_eval(lambda: run_schema.run(live=live, settings=settings, reports_dir=REPORTS))
+        final = r["styles"]["schema_retry"]["final_validity"]["rate"]
+        typer.echo(f"schema: final validity {final} -> reports/schema.md")
+    if suite is EvalSuite.grounding or run_all:
+        from llm_guardrails.eval import run_grounding
+
+        r = _run_eval(lambda: run_grounding.run(live=live, settings=settings, reports_dir=REPORTS))
+        t = r["splits"]["test"]["with_entailment"]
+        typer.echo(f"grounding: F1 {t['f1']} (with judge) -> reports/grounding.md")
+    if suite is EvalSuite.e2e or run_all:
+        from llm_guardrails.eval import run_e2e
+
+        if part is not None:
+            if part not in run_e2e.PARTS:
+                _fail(f"--part must be one of {', '.join(run_e2e.PARTS)}")
+            n = _run_eval(lambda: run_e2e.run_part(part, live=live, settings=settings))
+            typer.echo(f"e2e part {part}: {n} request(s) recorded/replayed")
+            return
+        if live_latency and not live:
+            _fail("--live-latency makes real calls: add --live")
+        r = _run_eval(
+            lambda: run_e2e.run(
+                live=live, settings=settings, reports_dir=REPORTS, live_latency=live_latency
+            )
+        )
+        typer.echo(f"e2e: {r['requests']} requests -> reports/e2e.md")
+    if run_all:
+        from llm_guardrails.eval import report
+
+        report.write_summary(REPORTS)
+        typer.echo(
+            "summary -> reports/summary.md (run `guardrails report readme` to update the README)"
+        )
 
 
 # ----------------------------------------------------------------------------- others
@@ -462,8 +515,15 @@ def baseline_bedrock(live: Live = False) -> None:
 
 @report_app.command("readme")
 def report_readme() -> None:
-    """Regenerate the README's result tables from reports/."""
-    _later("20", "report readme")
+    """Rebuild reports/summary.md from the report files and copy it into the README."""
+    from llm_guardrails.eval import report
+
+    readme = Path("README.md")  # like reports/, relative to where the command runs
+    if not readme.is_file():
+        _fail("no README.md here: run this from the repository root")
+    summary = report.write_summary(REPORTS)
+    changed = report.update_readme(summary, readme)
+    typer.echo("README results block " + ("updated" if changed else "already up to date"))
 
 
 if __name__ == "__main__":

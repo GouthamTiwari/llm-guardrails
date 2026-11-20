@@ -109,10 +109,7 @@ def test_eval_refuses_the_dev_split_and_runs_pii_offline(tmp_path, monkeypatch) 
 @pytest.mark.parametrize(
     ("args", "task"),
     [
-        (["sweep", "grounding"], "20"),
-        (["eval", "--suite", "e2e"], "20"),
         (["baseline", "bedrock", "--live"], "21"),
-        (["report", "readme"], "20"),
     ],
 )
 def test_later_commands_exist_and_say_when(args, task) -> None:
@@ -126,6 +123,37 @@ def test_dataset_commands_check_their_arguments(tmp_path) -> None:
     assert r.exit_code == 2 and "--suite must be one of" in r.output
     r = run("dataset", "apply-review", "--csv", str(tmp_path / "missing.csv"))
     assert r.exit_code == 2 and "review-sample" in r.output
+
+
+def test_task20_commands_check_their_arguments(tmp_path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)  # never touch the real reports/ or README
+    r = run("sweep", "grounding", "--split", "test")
+    assert r.exit_code == 2 and "dev split only" in r.output
+    r = run("eval", "--suite", "e2e", "--part", "bogus")
+    assert r.exit_code == 2 and "--part must be one of" in r.output
+    r = run("eval", "--suite", "e2e", "--live-latency")
+    assert r.exit_code == 2 and "add --live" in r.output
+    r = run("eval", "--suite", "grounding")
+    assert r.exit_code == 2 and "sweep grounding" in r.output
+    r = run("report", "readme")
+    assert r.exit_code == 2 and "repository root" in r.output
+
+
+def test_report_readme_fills_the_block_in_this_folder(tmp_path, monkeypatch) -> None:
+    import shutil
+
+    from llm_guardrails.eval.reports import REPORTS_DIR
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "reports").mkdir()
+    for name in ("injection.json", "pii.json"):
+        shutil.copy(REPORTS_DIR / name, tmp_path / "reports" / name)
+    readme = "# x\n<!-- RESULTS:START -->\nSTALE-BLOCK\n<!-- RESULTS:END -->\n"
+    (tmp_path / "README.md").write_text(readme, encoding="utf-8")
+    r = run("report", "readme")
+    assert r.exit_code == 0 and "updated" in r.output
+    text = (tmp_path / "README.md").read_text(encoding="utf-8")
+    assert "Prompt injection: attacks blocked" in text and "STALE-BLOCK" not in text
 
 
 def test_spend_reads_the_ledger(tmp_path, monkeypatch) -> None:
