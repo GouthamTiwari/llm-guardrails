@@ -28,8 +28,9 @@ Every number in this section is generated from the committed files in `reports/`
 | End to end: raw PII that reached the model | 0.0% (0.0–5.8, 0/63) | [e2e](reports/e2e.md) |
 | Poisoned retrieved documents neutralised: document classifier off (default) → on | 16.7% (4.7–44.8, 2/12) → 83.3% (55.2–95.3, 10/12) | [e2e](reports/e2e.md) |
 | Latency, live sample of 30 requests: p50 / p95 end to end | 748 ms / 2743 ms | [e2e](reports/e2e.md) |
+| Amazon Bedrock Guardrails baseline | prompt attacks blocked 38.0% (29.1–47.8, 38/100) vs ours 95.0% (88.8–97.9, 95/100); normal messages blocked 10.8% (6.1–18.3, 11/102) vs ours 5.9% (2.7–12.2, 6/102); PII look-alike rows flagged 21.9% (13.5–33.4, 14/64) vs ours 0.0% (0.0–5.7, 0/64) | [baseline](reports/baseline_bedrock_guardrails.md) |
 
-All data is synthetic or licence-clean; labels are assistant-reviewed, human spot-check pending. Thresholds were tuned on the dev split only and the test split was evaluated once. Model calls recorded in these reports cost USD 0.3335; `guardrails eval --suite all` replays them offline for free.
+All data is synthetic or licence-clean; labels are assistant-reviewed, human spot-check pending. Thresholds were tuned on the dev split only and the test split was evaluated once. Model calls recorded in these reports cost USD 0.4226; `guardrails eval --suite all` replays them offline for free.
 <!-- RESULTS:END -->
 
 ---

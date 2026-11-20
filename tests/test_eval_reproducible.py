@@ -94,3 +94,17 @@ async def test_e2e_numbers_reproduce(tmp_path) -> None:
     new, old = stable(_load(tmp_path / "e2e.json")), stable(_load(REPORTS_DIR / "e2e.json"))
     new.pop("local_latency_ms"), old.pop("local_latency_ms")
     assert new == old
+
+
+def test_baseline_report_reproduces_from_recordings(tmp_path) -> None:
+    """Rebuilt offline from the recorded ApplyGuardrail responses: no AWS calls."""
+    from llm_guardrails.eval import baseline_bedrock
+
+    for name in ("injection.json", "pii.json"):
+        shutil.copy(REPORTS_DIR / name, tmp_path)
+    baseline_bedrock.run(live=False, settings=None, reports_dir=tmp_path)
+    name = "baseline_bedrock_guardrails"
+    assert stable(_load(tmp_path / f"{name}.json")) == stable(_load(REPORTS_DIR / f"{name}.json"))
+    assert (tmp_path / f"{name}.md").read_text("utf-8") == (REPORTS_DIR / f"{name}.md").read_text(
+        "utf-8"
+    )

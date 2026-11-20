@@ -1,0 +1,236 @@
+{
+  "generated_at": "2026-11-20T18:50:45+00:00",
+  "git_sha": "bba6d24",
+  "dataset_sha256": {
+    "injection.jsonl": "1b40a1242536c6d2ced1d447fd72647852f8000b634d8fd2900e7d60fc7d6b98",
+    "pii.jsonl": "242d2d4714d548e8f5f30868cc981723743dd25e9e6afae49376cb43e23afc1b"
+  },
+  "operating_point": null,
+  "mode": "replay",
+  "spend_usd": 0.0891,
+  "status": {
+    "available": true,
+    "reason": null
+  },
+  "guardrail": {
+    "runs": [
+      {
+        "index": 1,
+        "guardrail_name": "llm-guardrails-baseline-5d7dd02d",
+        "texts": 349,
+        "deleted_and_verified": true,
+        "pii_input_enabled": false,
+        "usd": 0.05235
+      },
+      {
+        "index": 2,
+        "guardrail_name": "llm-guardrails-baseline-47b2af46",
+        "texts": 147,
+        "deleted_and_verified": true,
+        "pii_input_enabled": true,
+        "usd": 0.03675
+      }
+    ],
+    "deleted_and_verified": true,
+    "prompt_attack_strength": "HIGH",
+    "managed_pii_types": [
+      "EMAIL",
+      "PHONE",
+      "CREDIT_DEBIT_CARD_NUMBER"
+    ]
+  },
+  "bedrock": {
+    "injection": {
+      "attack_recall": {
+        "k": 38,
+        "n": 100,
+        "rate": 0.38,
+        "ci95": [
+          0.291,
+          0.4779
+        ]
+      },
+      "benign_fpr": {
+        "k": 11,
+        "n": 102,
+        "rate": 0.1078,
+        "ci95": [
+          0.0613,
+          0.1829
+        ]
+      },
+      "hard_benign_fpr": {
+        "k": 11,
+        "n": 53,
+        "rate": 0.2075,
+        "ci95": [
+          0.12,
+          0.3346
+        ]
+      }
+    },
+    "pii_overlapping_types": {
+      "EMAIL": {
+        "tp": 11,
+        "fp": 6,
+        "fn": 0,
+        "precision": 0.6471,
+        "precision_ci95": [
+          0.413,
+          0.8269
+        ],
+        "recall": 1.0,
+        "recall_ci95": [
+          0.7412,
+          1.0
+        ],
+        "f1": 0.7857
+      },
+      "PHONE": {
+        "tp": 9,
+        "fp": 7,
+        "fn": 1,
+        "precision": 0.5625,
+        "precision_ci95": [
+          0.3318,
+          0.769
+        ],
+        "recall": 0.9,
+        "recall_ci95": [
+          0.5958,
+          0.9821
+        ],
+        "f1": 0.6923
+      },
+      "CREDIT_DEBIT_CARD_NUMBER": {
+        "tp": 11,
+        "fp": 7,
+        "fn": 0,
+        "precision": 0.6111,
+        "precision_ci95": [
+          0.3862,
+          0.7969
+        ],
+        "recall": 1.0,
+        "recall_ci95": [
+          0.7412,
+          1.0
+        ],
+        "f1": 0.7586
+      }
+    },
+    "pii_rows_without_pii_flagged": {
+      "k": 14,
+      "n": 64,
+      "rate": 0.2188,
+      "ci95": [
+        0.135,
+        0.3343
+      ]
+    },
+    "no_managed_equivalent": [
+      "AADHAAR",
+      "PAN",
+      "GSTIN",
+      "UPI_ID",
+      "IFSC"
+    ],
+    "calls": 349,
+    "usd": 0.0891,
+    "latency_ms": {
+      "p50": 155.2,
+      "p95": 266.4
+    }
+  },
+  "ours": {
+    "injection": {
+      "attack_recall": {
+        "k": 95,
+        "n": 100,
+        "rate": 0.95,
+        "ci95": [
+          0.8882,
+          0.9785
+        ]
+      },
+      "benign_fpr": {
+        "k": 6,
+        "n": 102,
+        "rate": 0.0588,
+        "ci95": [
+          0.0272,
+          0.1224
+        ]
+      },
+      "hard_benign_fpr": {
+        "k": 6,
+        "n": 53,
+        "rate": 0.1132,
+        "ci95": [
+          0.0529,
+          0.2258
+        ]
+      }
+    },
+    "pii": {
+      "EMAIL": {
+        "tp": 11,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.7412,
+          1.0
+        ],
+        "recall": 1.0,
+        "recall_ci95": [
+          0.7412,
+          1.0
+        ],
+        "f1": 1.0
+      },
+      "PHONE_IN": {
+        "tp": 10,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.9091,
+        "precision_ci95": [
+          0.6226,
+          0.9838
+        ],
+        "recall": 1.0,
+        "recall_ci95": [
+          0.7225,
+          1.0
+        ],
+        "f1": 0.9524
+      },
+      "CREDIT_CARD": {
+        "tp": 11,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.7412,
+          1.0
+        ],
+        "recall": 1.0,
+        "recall_ci95": [
+          0.7412,
+          1.0
+        ],
+        "f1": 1.0
+      }
+    },
+    "pii_rows_without_pii_flagged": {
+      "k": 0,
+      "n": 64,
+      "rate": 0.0,
+      "ci95": [
+        0.0,
+        0.0566
+      ]
+    }
+  },
+  "summary": "prompt attacks blocked 38.0% (29.1–47.8, 38/100) vs ours 95.0% (88.8–97.9, 95/100); normal messages blocked 10.8% (6.1–18.3, 11/102) vs ours 5.9% (2.7–12.2, 6/102); PII look-alike rows flagged 21.9% (13.5–33.4, 14/64) vs ours 0.0% (0.0–5.7, 0/64)"
+}

@@ -106,15 +106,15 @@ def test_eval_refuses_the_dev_split_and_runs_pii_offline(tmp_path, monkeypatch) 
     assert r.exit_code == 0 and (tmp_path / "reports" / "pii.json").is_file()
 
 
-@pytest.mark.parametrize(
-    ("args", "task"),
-    [
-        (["baseline", "bedrock", "--live"], "21"),
-    ],
-)
-def test_later_commands_exist_and_say_when(args, task) -> None:
-    r = run(*args)
-    assert r.exit_code == 2 and f"Task {task}" in r.output
+def test_baseline_without_live_only_rebuilds_from_recordings(tmp_path, monkeypatch) -> None:
+    """Never --live in a test: that would create a real guardrail in the AWS account."""
+    from llm_guardrails.eval import baseline_bedrock
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(baseline_bedrock, "RECORDINGS", tmp_path / "none.jsonl")
+    r = run("baseline", "bedrock")
+    assert r.exit_code == 0 and "not available: not run (no recordings)" in r.output
+    assert (tmp_path / "reports" / "baseline_bedrock_guardrails.md").is_file()
 
 
 def test_dataset_commands_check_their_arguments(tmp_path) -> None:

@@ -508,9 +508,36 @@ def eval_(
 
 
 @baseline_app.command("bedrock")
-def baseline_bedrock(live: Live = False) -> None:
-    """Optional comparison with Amazon Bedrock Guardrails (needs a separate yes)."""
-    _later("21", "baseline bedrock")
+def baseline_bedrock(
+    live: Live = False,
+    only: Annotated[
+        str | None,
+        typer.Option("--only", help="With --live: run just one test set (injection or pii)."),
+    ] = None,
+) -> None:
+    """Optional comparison with Amazon Bedrock Guardrails. With --live it creates one
+    temporary guardrail, applies it to the test sets and deletes it in the same run;
+    without --live it rebuilds the report from the recorded responses."""
+    from llm_guardrails.eval import baseline_bedrock as baseline
+    from llm_guardrails.types import BudgetExceeded
+
+    try:
+        if only not in (None, "injection", "pii"):
+            _fail("--only must be injection or pii")
+        suites = (only,) if only else ("injection", "pii")
+        r = baseline.run(live=live, settings=_settings(), reports_dir=REPORTS, suites=suites)
+    except BudgetExceeded as exc:
+        _fail(str(exc))
+    if not r["status"]["available"]:
+        typer.echo(
+            f"baseline not available: {r['status']['reason']} -> "
+            "reports/baseline_bedrock_guardrails.md"
+        )
+        return
+    typer.echo(
+        f"baseline: {r['summary']}; guardrail deleted and verified: "
+        f"{r['guardrail']['deleted_and_verified']}"
+    )
 
 
 @report_app.command("readme")
