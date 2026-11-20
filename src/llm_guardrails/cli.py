@@ -282,6 +282,16 @@ def dataset_embed(live: Live = False) -> None:
     typer.echo(f"embedded {new} new text(s); {len(rows)} rows have vectors")
 
 
+@dataset_app.command("download-external")
+def dataset_download_external() -> None:
+    """Download the deepset/prompt-injections TEST split (116 rows, Apache-2.0) into
+    data/raw/ (git-ignored) for the external injection check."""
+    from llm_guardrails.eval.run_injection import EXTERNAL_RAW, download_external
+
+    n = download_external()
+    typer.echo(f"saved {n} rows to {EXTERNAL_RAW}")
+
+
 @dataset_app.command("split")
 def dataset_split(suite: SuiteOrAll = "all") -> None:
     """Assign dev/test (50/50 per stratum, duplicate groups together, seeds in dev)."""
@@ -373,10 +383,29 @@ def _sweep(kind: str, split: Split, task: str) -> None:
     _later(task, f"sweep {kind}")
 
 
+def _run_eval(coro_factory) -> dict:
+    """Run an eval coroutine, turning a missing recording into a clear message."""
+    from llm_guardrails.types import BudgetExceeded, ReplayMissing
+
+    try:
+        return asyncio.run(coro_factory())
+    except ReplayMissing as exc:
+        _fail(f"{len(exc.keys)} model/embedding call(s) have no recording: rerun with --live")
+    except BudgetExceeded as exc:
+        _fail(str(exc))
+
+
 @sweep_app.command("injection")
-def sweep_injection(split: SplitOption = Split.dev) -> None:
+def sweep_injection(split: SplitOption = Split.dev, live: Live = False) -> None:
     """Choose injection thresholds on dev; writes reports/operating_point.json."""
-    _sweep("injection", split, "19")
+    if split is Split.test:
+        _fail("sweeps run on the dev split only; the test split is for the final eval")
+    from llm_guardrails.eval import sweep
+
+    settings = _settings()
+    point = _run_eval(lambda: sweep.run(live=live, settings=settings, reports_dir=REPORTS))
+    typer.echo(json.dumps({k: point[k] for k in ("t_block", "t_allow", "t_llm",
+                                                 "benign_lambda", "dev")}, indent=2))  # fmt: skip
 
 
 @sweep_app.command("grounding")
@@ -392,18 +421,34 @@ def sweep_grounding(split: SplitOption = Split.dev) -> None:
 def eval_(
     suite: Annotated[EvalSuite, typer.Option("--suite", help="Which suite to run.")],
     live: Live = False,
-    split: SplitOption = Split.dev,
+    split: SplitOption = Split.test,
 ) -> None:
-    """Run an evaluation suite (replay by default: offline and free)."""
+    """Run an evaluation suite and write reports/ (replay by default: offline and free)."""
     needs_operating_point = suite in (EvalSuite.injection, EvalSuite.all)
-    if (
-        split is Split.test
-        and needs_operating_point
-        and not (REPORTS / "operating_point.json").is_file()
-    ):
+    if needs_operating_point and not (REPORTS / "operating_point.json").is_file():
         _fail("run `guardrails sweep injection` on dev first: the test eval uses the "
               "thresholds it writes to reports/operating_point.json")  # fmt: skip
-    _later("19" if suite in (EvalSuite.injection, EvalSuite.pii) else "20", "eval")
+    if split is Split.dev:
+        _fail("reports are computed on the test split (each includes a dev reference); "
+              "tune on dev with `guardrails sweep`")  # fmt: skip
+    if suite in (EvalSuite.pii, EvalSuite.all):
+        from llm_guardrails.eval import run_pii
+
+        r = run_pii.run(reports_dir=REPORTS)
+        typer.echo(f"pii: micro F1 {r['test']['shipped']['micro']['f1']} -> reports/pii.md")
+    if suite in (EvalSuite.injection, EvalSuite.all):
+        from llm_guardrails.eval import run_injection
+
+        settings = _settings()
+        r = _run_eval(lambda: run_injection.run(live=live, settings=settings,
+                                                reports_dir=REPORTS))  # fmt: skip
+        shipped = r["test"]["layers"]["all"]
+        typer.echo(f"injection: recall {shipped['attack_recall']['rate']}, benign FPR "
+                   f"{shipped['benign_fpr']['rate']} -> reports/injection.md")  # fmt: skip
+    if suite not in (EvalSuite.pii, EvalSuite.injection, EvalSuite.all):
+        _later("20", f"eval --suite {suite.value}")
+    if suite is EvalSuite.all:
+        _later("20", "eval --suite schema/grounding/e2e")
 
 
 # ----------------------------------------------------------------------------- others

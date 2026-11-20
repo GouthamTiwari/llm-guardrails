@@ -1,0 +1,963 @@
+{
+  "generated_at": "2026-11-20T17:49:35+00:00",
+  "git_sha": "8a11c7f",
+  "dataset_sha256": {
+    "injection.jsonl": "1b40a1242536c6d2ced1d447fd72647852f8000b634d8fd2900e7d60fc7d6b98",
+    "attack_corpus.jsonl": "98564a1502247f4fbedc2ca0d5e191eba3f5ad7728737afaaf10daa2fb997fba",
+    "benign_anchors.jsonl": "2e5bde6019213aa10de58e4d92347625ecc7fd8767d05cc06fd712baee18e6ae"
+  },
+  "operating_point": {
+    "t_block": 0.53,
+    "t_allow": 0.22,
+    "t_llm": 0.8,
+    "benign_lambda": 0.5
+  },
+  "mode": "replay",
+  "spend_usd": 0.114424,
+  "test": {
+    "rows": 202,
+    "layers": {
+      "rules": {
+        "attack_recall": {
+          "k": 18,
+          "n": 100,
+          "rate": 0.18,
+          "ci95": [
+            0.117,
+            0.2667
+          ]
+        },
+        "benign_fpr": {
+          "k": 1,
+          "n": 102,
+          "rate": 0.0098,
+          "ci95": [
+            0.0017,
+            0.0535
+          ]
+        }
+      },
+      "embed": {
+        "attack_recall": {
+          "k": 18,
+          "n": 100,
+          "rate": 0.18,
+          "ci95": [
+            0.117,
+            0.2667
+          ]
+        },
+        "benign_fpr": {
+          "k": 1,
+          "n": 102,
+          "rate": 0.0098,
+          "ci95": [
+            0.0017,
+            0.0535
+          ]
+        }
+      },
+      "rules_embed": {
+        "attack_recall": {
+          "k": 31,
+          "n": 100,
+          "rate": 0.31,
+          "ci95": [
+            0.2278,
+            0.4063
+          ]
+        },
+        "benign_fpr": {
+          "k": 2,
+          "n": 102,
+          "rate": 0.0196,
+          "ci95": [
+            0.0054,
+            0.0687
+          ]
+        }
+      },
+      "all": {
+        "attack_recall": {
+          "k": 95,
+          "n": 100,
+          "rate": 0.95,
+          "ci95": [
+            0.8882,
+            0.9785
+          ]
+        },
+        "benign_fpr": {
+          "k": 6,
+          "n": 102,
+          "rate": 0.0588,
+          "ci95": [
+            0.0272,
+            0.1224
+          ]
+        }
+      }
+    },
+    "hard_benign_fpr": {
+      "k": 6,
+      "n": 53,
+      "rate": 0.1132,
+      "ci95": [
+        0.0529,
+        0.2258
+      ]
+    },
+    "per_category": {
+      "benign": {
+        "attack_recall": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 49,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0727
+          ]
+        }
+      },
+      "benign_hard": {
+        "attack_recall": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 6,
+          "n": 53,
+          "rate": 0.1132,
+          "ci95": [
+            0.0529,
+            0.2258
+          ]
+        }
+      },
+      "delimiter_confusion": {
+        "attack_recall": {
+          "k": 8,
+          "n": 8,
+          "rate": 1.0,
+          "ci95": [
+            0.6756,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "direct_override": {
+        "attack_recall": {
+          "k": 10,
+          "n": 10,
+          "rate": 1.0,
+          "ci95": [
+            0.7225,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "encoding_obfuscation": {
+        "attack_recall": {
+          "k": 7,
+          "n": 11,
+          "rate": 0.6364,
+          "ci95": [
+            0.3538,
+            0.8483
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "exfiltration": {
+        "attack_recall": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "indirect_document": {
+        "attack_recall": {
+          "k": 11,
+          "n": 12,
+          "rate": 0.9167,
+          "ci95": [
+            0.6461,
+            0.9851
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "multilingual": {
+        "attack_recall": {
+          "k": 11,
+          "n": 11,
+          "rate": 1.0,
+          "ci95": [
+            0.7412,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "roleplay_jailbreak": {
+        "attack_recall": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "system_prompt_extraction": {
+        "attack_recall": {
+          "k": 11,
+          "n": 11,
+          "rate": 1.0,
+          "ci95": [
+            0.7412,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "tool_abuse": {
+        "attack_recall": {
+          "k": 13,
+          "n": 13,
+          "rate": 1.0,
+          "ci95": [
+            0.7719,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "per_language": {
+      "en": {
+        "attack_recall": {
+          "k": 55,
+          "n": 60,
+          "rate": 0.9167,
+          "ci95": [
+            0.8193,
+            0.9639
+          ]
+        },
+        "benign_fpr": {
+          "k": 6,
+          "n": 80,
+          "rate": 0.075,
+          "ci95": [
+            0.0348,
+            0.1541
+          ]
+        }
+      },
+      "es": {
+        "attack_recall": {
+          "k": 15,
+          "n": 15,
+          "rate": 1.0,
+          "ci95": [
+            0.7961,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 5,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.4345
+          ]
+        }
+      },
+      "hi": {
+        "attack_recall": {
+          "k": 19,
+          "n": 19,
+          "rate": 1.0,
+          "ci95": [
+            0.8318,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        }
+      },
+      "hinglish": {
+        "attack_recall": {
+          "k": 5,
+          "n": 5,
+          "rate": 1.0,
+          "ci95": [
+            0.5655,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "mixed": {
+        "attack_recall": {
+          "k": 1,
+          "n": 1,
+          "rate": 1.0,
+          "ci95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 1,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.7935
+          ]
+        }
+      }
+    },
+    "classifier_calls": 126,
+    "classifier_call_rate": 0.6238,
+    "classifier_errors_failed_closed": 0,
+    "usd_per_1000_requests": {
+      "rules": 0.0,
+      "embeddings": 0.000736,
+      "llm_classifier": 0.216143
+    }
+  },
+  "dev_reference": {
+    "rows": 205,
+    "layers": {
+      "rules": {
+        "attack_recall": {
+          "k": 38,
+          "n": 103,
+          "rate": 0.3689,
+          "ci95": [
+            0.282,
+            0.4653
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 102,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0363
+          ]
+        }
+      },
+      "embed": {
+        "attack_recall": {
+          "k": 22,
+          "n": 103,
+          "rate": 0.2136,
+          "ci95": [
+            0.1455,
+            0.3023
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 102,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0363
+          ]
+        }
+      },
+      "rules_embed": {
+        "attack_recall": {
+          "k": 47,
+          "n": 103,
+          "rate": 0.4563,
+          "ci95": [
+            0.3634,
+            0.5523
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 102,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0363
+          ]
+        }
+      },
+      "all": {
+        "attack_recall": {
+          "k": 100,
+          "n": 103,
+          "rate": 0.9709,
+          "ci95": [
+            0.9178,
+            0.99
+          ]
+        },
+        "benign_fpr": {
+          "k": 2,
+          "n": 102,
+          "rate": 0.0196,
+          "ci95": [
+            0.0054,
+            0.0687
+          ]
+        }
+      },
+      "llm": {
+        "attack_recall": {
+          "k": 99,
+          "n": 103,
+          "rate": 0.9612,
+          "ci95": [
+            0.9044,
+            0.9848
+          ]
+        },
+        "benign_fpr": {
+          "k": 2,
+          "n": 102,
+          "rate": 0.0196,
+          "ci95": [
+            0.0054,
+            0.0687
+          ]
+        }
+      }
+    },
+    "hard_benign_fpr": {
+      "k": 2,
+      "n": 52,
+      "rate": 0.0385,
+      "ci95": [
+        0.0106,
+        0.1298
+      ]
+    },
+    "per_category": {
+      "benign": {
+        "attack_recall": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 50,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0713
+          ]
+        }
+      },
+      "benign_hard": {
+        "attack_recall": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 2,
+          "n": 52,
+          "rate": 0.0385,
+          "ci95": [
+            0.0106,
+            0.1298
+          ]
+        }
+      },
+      "delimiter_confusion": {
+        "attack_recall": {
+          "k": 8,
+          "n": 8,
+          "rate": 1.0,
+          "ci95": [
+            0.6756,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "direct_override": {
+        "attack_recall": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "encoding_obfuscation": {
+        "attack_recall": {
+          "k": 10,
+          "n": 12,
+          "rate": 0.8333,
+          "ci95": [
+            0.552,
+            0.953
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "exfiltration": {
+        "attack_recall": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "indirect_document": {
+        "attack_recall": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "multilingual": {
+        "attack_recall": {
+          "k": 11,
+          "n": 11,
+          "rate": 1.0,
+          "ci95": [
+            0.7412,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "roleplay_jailbreak": {
+        "attack_recall": {
+          "k": 12,
+          "n": 12,
+          "rate": 1.0,
+          "ci95": [
+            0.7575,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "system_prompt_extraction": {
+        "attack_recall": {
+          "k": 11,
+          "n": 11,
+          "rate": 1.0,
+          "ci95": [
+            0.7412,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "tool_abuse": {
+        "attack_recall": {
+          "k": 12,
+          "n": 13,
+          "rate": 0.9231,
+          "ci95": [
+            0.6669,
+            0.9863
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 0,
+          "rate": null,
+          "ci95": [
+            0.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "per_language": {
+      "en": {
+        "attack_recall": {
+          "k": 68,
+          "n": 71,
+          "rate": 0.9577,
+          "ci95": [
+            0.883,
+            0.9855
+          ]
+        },
+        "benign_fpr": {
+          "k": 1,
+          "n": 75,
+          "rate": 0.0133,
+          "ci95": [
+            0.0024,
+            0.0717
+          ]
+        }
+      },
+      "es": {
+        "attack_recall": {
+          "k": 11,
+          "n": 11,
+          "rate": 1.0,
+          "ci95": [
+            0.7412,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 7,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.3543
+          ]
+        }
+      },
+      "hi": {
+        "attack_recall": {
+          "k": 14,
+          "n": 14,
+          "rate": 1.0,
+          "ci95": [
+            0.7847,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 1,
+          "n": 17,
+          "rate": 0.0588,
+          "ci95": [
+            0.0105,
+            0.2698
+          ]
+        }
+      },
+      "hinglish": {
+        "attack_recall": {
+          "k": 7,
+          "n": 7,
+          "rate": 1.0,
+          "ci95": [
+            0.6457,
+            1.0
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.5615
+          ]
+        }
+      }
+    },
+    "classifier_calls": 111,
+    "classifier_call_rate": 0.5415,
+    "classifier_errors_failed_closed": 0,
+    "usd_per_1000_requests": {
+      "rules": 0.0,
+      "embeddings": 0.000731,
+      "llm_classifier": 0.18716
+    }
+  },
+  "external": {
+    "rows": 116,
+    "layers": {
+      "rules": {
+        "attack_recall": {
+          "k": 1,
+          "n": 60,
+          "rate": 0.0167,
+          "ci95": [
+            0.0029,
+            0.0886
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 56,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0642
+          ]
+        }
+      },
+      "embed": {
+        "attack_recall": {
+          "k": 0,
+          "n": 60,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0602
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 56,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0642
+          ]
+        }
+      },
+      "rules_embed": {
+        "attack_recall": {
+          "k": 1,
+          "n": 60,
+          "rate": 0.0167,
+          "ci95": [
+            0.0029,
+            0.0886
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 56,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0642
+          ]
+        }
+      },
+      "all": {
+        "attack_recall": {
+          "k": 17,
+          "n": 60,
+          "rate": 0.2833,
+          "ci95": [
+            0.1851,
+            0.4077
+          ]
+        },
+        "benign_fpr": {
+          "k": 0,
+          "n": 56,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0642
+          ]
+        }
+      }
+    },
+    "classifier_calls": 27,
+    "classifier_call_rate": 0.2328,
+    "classifier_errors_failed_closed": 0,
+    "usd_per_1000_requests": {
+      "rules": 0.0,
+      "embeddings": 0.000993,
+      "llm_classifier": 0.080634
+    },
+    "source": "deepset/prompt-injections, test split (Apache-2.0), downloaded at eval time into data/raw/ and not committed"
+  }
+}

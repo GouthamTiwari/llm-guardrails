@@ -87,20 +87,29 @@ def test_sweep_refuses_the_test_split() -> None:
 
 def test_test_eval_needs_the_operating_point(tmp_path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
-    r = run("eval", "--suite", "injection", "--split", "test")
+    r = run("eval", "--suite", "injection")
     assert r.exit_code == 2 and "sweep injection" in r.output
     (tmp_path / "reports").mkdir()
-    (tmp_path / "reports" / "operating_point.json").write_text("{}", encoding="utf-8")
-    r = run("eval", "--suite", "injection", "--split", "test")
-    assert r.exit_code == 2 and "Task 19" in r.output  # past the check, into the stub
+    point = {"t_block": 0.6, "t_allow": 0.35, "t_llm": 0.5, "benign_lambda": 0.5}
+    (tmp_path / "reports" / "operating_point.json").write_text(json.dumps(point),
+                                                               encoding="utf-8")  # fmt: skip
+    r = run("eval", "--suite", "injection")
+    # Past the check; this empty folder has no recordings, so the replay stops loudly.
+    assert r.exit_code == 2 and "no recording" in r.output
+
+
+def test_eval_refuses_the_dev_split_and_runs_pii_offline(tmp_path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    r = run("eval", "--suite", "pii", "--split", "dev")
+    assert r.exit_code == 2 and "test split" in r.output
+    r = run("eval", "--suite", "pii")
+    assert r.exit_code == 0 and (tmp_path / "reports" / "pii.json").is_file()
 
 
 @pytest.mark.parametrize(
     ("args", "task"),
     [
-        (["sweep", "injection"], "19"),
         (["sweep", "grounding"], "20"),
-        (["eval", "--suite", "pii"], "19"),
         (["eval", "--suite", "e2e"], "20"),
         (["baseline", "bedrock", "--live"], "21"),
         (["report", "readme"], "20"),

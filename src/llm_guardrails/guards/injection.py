@@ -160,11 +160,14 @@ WINDOW_OVERLAP = 200  # ...that overlap, so an attack on a boundary is not cut i
 
 @dataclass(frozen=True)
 class InjectionConfig:
-    """Thresholds (spec 7.4). Starting values; Task 19's dev-split sweep replaces them."""
+    """Thresholds (spec 7.4) from the Task 19 dev sweep, reports/operating_point.json
+    (tests/test_eval_injection_pii.py keeps the two equal). The low t_allow sends about half
+    of all inputs to the classifier: on dev the classifier alone caught 99/102 attacks, while
+    the embedding layer alone caught few, so a wide grey zone is where the recall comes from."""
 
-    t_block: float = 0.60  # embedding score that blocks on its own (provisional, decision 4)
-    t_allow: float = 0.35  # below this, nothing suspicious (Task 11: grey zone in between)
-    t_llm: float = 0.5  # classifier score that blocks (Task 11)
+    t_block: float = 0.53  # embedding score that blocks on its own
+    t_allow: float = 0.22  # below this, nothing suspicious; grey zone up to t_block
+    t_llm: float = 0.8  # classifier score that blocks
     benign_lambda: float = 0.5  # how hard a closer benign anchor pulls the score down
     use_embeddings: bool = True
     use_llm: bool = True

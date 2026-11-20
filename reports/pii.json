@@ -1,0 +1,499 @@
+{
+  "generated_at": "2026-11-20T17:49:37+00:00",
+  "git_sha": "8a11c7f",
+  "dataset_sha256": {
+    "pii.jsonl": "242d2d4714d548e8f5f30868cc981723743dd25e9e6afae49376cb43e23afc1b"
+  },
+  "operating_point": null,
+  "mode": "offline",
+  "spend_usd": 0.0,
+  "min_confidence": 0.6,
+  "test": {
+    "rows": 147,
+    "rows_without_pii": 64,
+    "shipped": {
+      "per_type": {
+        "AADHAAR": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7412,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7412,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "CREDIT_CARD": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7412,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7412,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "EMAIL": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7412,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7412,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "GSTIN": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7412,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7412,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "IFSC": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7225,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7225,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "PAN": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7225,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7225,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "PHONE_IN": {
+          "tp": 10,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9091,
+          "precision_ci95": [
+            0.6226,
+            0.9838
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7225,
+            1.0
+          ],
+          "f1": 0.9524
+        },
+        "UPI_ID": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.6756,
+            1.0
+          ],
+          "recall": 0.8,
+          "recall_ci95": [
+            0.4902,
+            0.9433
+          ],
+          "f1": 0.8889
+        }
+      },
+      "micro": {
+        "tp": 82,
+        "fp": 1,
+        "fn": 2,
+        "precision": 0.988,
+        "precision_ci95": [
+          0.9349,
+          0.9979
+        ],
+        "recall": 0.9762,
+        "recall_ci95": [
+          0.9173,
+          0.9934
+        ],
+        "f1": 0.982
+      },
+      "rows_without_pii_with_a_detection": {
+        "k": 0,
+        "n": 64,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.0566
+        ]
+      }
+    },
+    "ablation": {
+      "regex_only": {
+        "micro": {
+          "tp": 82,
+          "fp": 33,
+          "fn": 2,
+          "precision": 0.713,
+          "precision_ci95": [
+            0.6245,
+            0.7878
+          ],
+          "recall": 0.9762,
+          "recall_ci95": [
+            0.9173,
+            0.9934
+          ],
+          "f1": 0.8241
+        },
+        "rows_without_pii_with_a_detection": {
+          "k": 32,
+          "n": 64,
+          "rate": 0.5,
+          "ci95": [
+            0.381,
+            0.619
+          ]
+        }
+      },
+      "regex_validation": {
+        "micro": {
+          "tp": 82,
+          "fp": 1,
+          "fn": 2,
+          "precision": 0.988,
+          "precision_ci95": [
+            0.9349,
+            0.9979
+          ],
+          "recall": 0.9762,
+          "recall_ci95": [
+            0.9173,
+            0.9934
+          ],
+          "f1": 0.982
+        },
+        "rows_without_pii_with_a_detection": {
+          "k": 0,
+          "n": 64,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0566
+          ]
+        }
+      },
+      "regex_validation_context": {
+        "micro": {
+          "tp": 82,
+          "fp": 1,
+          "fn": 2,
+          "precision": 0.988,
+          "precision_ci95": [
+            0.9349,
+            0.9979
+          ],
+          "recall": 0.9762,
+          "recall_ci95": [
+            0.9173,
+            0.9934
+          ],
+          "f1": 0.982
+        },
+        "rows_without_pii_with_a_detection": {
+          "k": 0,
+          "n": 64,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0566
+          ]
+        }
+      }
+    }
+  },
+  "dev": {
+    "rows": 161,
+    "rows_without_pii": 64,
+    "shipped": {
+      "per_type": {
+        "AADHAAR": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7847,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7847,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "CREDIT_CARD": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7719,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7719,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "EMAIL": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7847,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7847,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "GSTIN": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7719,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7719,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "IFSC": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7575,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7575,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "PAN": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.7847,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.7847,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "PHONE_IN": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.8064,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci95": [
+            0.8064,
+            1.0
+          ],
+          "f1": 1.0
+        },
+        "UPI_ID": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 4,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.6756,
+            1.0
+          ],
+          "recall": 0.6667,
+          "recall_ci95": [
+            0.3906,
+            0.8619
+          ],
+          "f1": 0.8
+        }
+      },
+      "micro": {
+        "tp": 104,
+        "fp": 0,
+        "fn": 4,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.9644,
+          1.0
+        ],
+        "recall": 0.963,
+        "recall_ci95": [
+          0.9086,
+          0.9855
+        ],
+        "f1": 0.9811
+      },
+      "rows_without_pii_with_a_detection": {
+        "k": 0,
+        "n": 64,
+        "rate": 0.0,
+        "ci95": [
+          0.0,
+          0.0566
+        ]
+      }
+    },
+    "ablation": {
+      "regex_only": {
+        "micro": {
+          "tp": 104,
+          "fp": 19,
+          "fn": 4,
+          "precision": 0.8455,
+          "precision_ci95": [
+            0.7713,
+            0.8988
+          ],
+          "recall": 0.963,
+          "recall_ci95": [
+            0.9086,
+            0.9855
+          ],
+          "f1": 0.9004
+        },
+        "rows_without_pii_with_a_detection": {
+          "k": 19,
+          "n": 64,
+          "rate": 0.2969,
+          "ci95": [
+            0.1991,
+            0.4177
+          ]
+        }
+      },
+      "regex_validation": {
+        "micro": {
+          "tp": 104,
+          "fp": 0,
+          "fn": 4,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.9644,
+            1.0
+          ],
+          "recall": 0.963,
+          "recall_ci95": [
+            0.9086,
+            0.9855
+          ],
+          "f1": 0.9811
+        },
+        "rows_without_pii_with_a_detection": {
+          "k": 0,
+          "n": 64,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0566
+          ]
+        }
+      },
+      "regex_validation_context": {
+        "micro": {
+          "tp": 104,
+          "fp": 0,
+          "fn": 4,
+          "precision": 1.0,
+          "precision_ci95": [
+            0.9644,
+            1.0
+          ],
+          "recall": 0.963,
+          "recall_ci95": [
+            0.9086,
+            0.9855
+          ],
+          "f1": 0.9811
+        },
+        "rows_without_pii_with_a_detection": {
+          "k": 0,
+          "n": 64,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.0566
+          ]
+        }
+      }
+    }
+  }
+}

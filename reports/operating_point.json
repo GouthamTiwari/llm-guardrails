@@ -1,0 +1,67 @@
+{
+  "source": "dev sweep",
+  "date": "2026-11-20",
+  "t_block": 0.53,
+  "t_allow": 0.22,
+  "t_llm": 0.8,
+  "benign_lambda": 0.5,
+  "objective": "max dev attack recall s.t. benign FPR <= 2.0% and hard-benign FPR <= 10%; ties: fewer classifier calls, lower benign FPR, higher thresholds",
+  "grid": {
+    "t_block": [
+      0.4,
+      0.9,
+      51
+    ],
+    "t_allow": [
+      0.2,
+      0.6,
+      41
+    ],
+    "t_llm": [
+      0.3,
+      0.8,
+      11
+    ],
+    "benign_lambda": [
+      0.0,
+      1.0,
+      3
+    ]
+  },
+  "feasible_points": 52668,
+  "dev": {
+    "attack_recall": {
+      "k": 100,
+      "n": 103,
+      "rate": 0.9709,
+      "ci95": [
+        0.9178,
+        0.99
+      ]
+    },
+    "benign_fpr": {
+      "k": 2,
+      "n": 102,
+      "rate": 0.0196,
+      "ci95": [
+        0.0054,
+        0.0687
+      ]
+    },
+    "hard_benign_fpr": {
+      "k": 2,
+      "n": 52,
+      "rate": 0.0385,
+      "ci95": [
+        0.0106,
+        0.1298
+      ]
+    },
+    "classifier_calls": 111
+  },
+  "dataset_sha256": {
+    "injection.jsonl": "1b40a1242536c6d2ced1d447fd72647852f8000b634d8fd2900e7d60fc7d6b98",
+    "attack_corpus.jsonl": "98564a1502247f4fbedc2ca0d5e191eba3f5ad7728737afaaf10daa2fb997fba",
+    "benign_anchors.jsonl": "2e5bde6019213aa10de58e4d92347625ecc7fd8767d05cc06fd712baee18e6ae"
+  }
+}
