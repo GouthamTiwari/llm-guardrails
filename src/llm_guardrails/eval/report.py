@@ -124,6 +124,7 @@ def summary_markdown(reports_dir: Path = REPORTS_DIR, review_doc: Path = REVIEW_
             "| [baseline](reports/baseline_bedrock_guardrails.md) |"
         )
     spend = sum(r.get("spend_usd", 0.0) for r in (inj, pii, sch, grd, e2e, base) if r)
+    ledger = _load(reports_dir, "spend.json")
     lines = [
         *rows,
         "",
@@ -132,7 +133,28 @@ def summary_markdown(reports_dir: Path = REPORTS_DIR, review_doc: Path = REVIEW_
         f"Model calls recorded in these reports cost USD {spend:.4f}; `guardrails eval "
         "--suite all` replays them offline for free.",
     ]
+    if ledger:
+        lines.append("")
+        lines.append(
+            f"Total live AWS spend for the whole project (spend ledger, including "
+            f"dataset generation and tests): USD {ledger['total_usd']:.4f} of a USD "
+            f"{ledger['budget_usd']:.2f} cap, across {ledger['calls']} calls."
+        )
     return "\n".join(lines) + "\n"
+
+
+def spend_report(entries: list[dict], budget_usd: float) -> dict[str, Any]:
+    """The ledger aggregated by purpose: counts and USD only (the ledger itself holds no text
+    and stays git-ignored; this summary is what the README may quote)."""
+    by: dict[str, dict[str, Any]] = {}
+    for e in entries:
+        b = by.setdefault(e["purpose"], {"calls": 0, "usd": 0.0})
+        b["calls"] += 1
+        b["usd"] += float(e["usd"])
+    by = {k: {"calls": v["calls"], "usd": round(v["usd"], 6)}
+          for k, v in sorted(by.items(), key=lambda kv: -kv[1]["usd"])}  # fmt: skip
+    return {"total_usd": round(sum(v["usd"] for v in by.values()), 4), "calls": len(entries),
+            "budget_usd": budget_usd, "by_purpose": by}  # fmt: skip
 
 
 def write_summary(reports_dir: Path = REPORTS_DIR) -> str:

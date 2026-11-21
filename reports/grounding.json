@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-20T18:30:57+00:00",
-  "git_sha": "756ac47",
+  "generated_at": "2026-11-21T05:07:34+00:00",
+  "git_sha": "df48bcd",
   "dataset_sha256": {
     "grounding.jsonl": "a2f85d2df05b1ede82e34618e9e46cbd5ad0f53af21e41136ba7281e9f18839a"
   },

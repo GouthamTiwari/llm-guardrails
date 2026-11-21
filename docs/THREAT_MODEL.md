@@ -61,3 +61,17 @@ Guardrails reduce risk; they do not eliminate it. This project is defence in dep
 - Attacks that are semantically indistinguishable from legitimate requests ("please show me your instructions" from a curious user).
 - Grounding: an answer that is supported by the source but answers the wrong question passes; a correct abstention when the answer *was* in the sources also passes (a quality issue, not a safety issue).
 - PII: identifiers without a checksum (PAN, phone, IFSC, UPI) can be confused with look-alikes; identifiers written in words ("nine eight seven…") are not detected.
+
+## Where each threat is measured
+
+| Threats | Report |
+|---|---|
+| T1, T3, T10 (injection, extraction, obfuscation) | [`reports/injection.md`](../reports/injection.md), [`reports/what_got_through.md`](../reports/what_got_through.md) |
+| T2 (indirect injection in documents) | document-scan ablation in [`reports/e2e.md`](../reports/e2e.md) |
+| T3, T4, T7 at the output (canary, exfiltration, PII in answers) | compromised-model run in [`reports/e2e.md`](../reports/e2e.md) |
+| T6 (personal data) | [`reports/pii.md`](../reports/pii.md); raw PII reaching the model in [`reports/e2e.md`](../reports/e2e.md); logs: `tests/test_no_pii_in_logs.py` |
+| T5 (tool abuse) | `tests/test_policy_guard.py`, `examples/agent_tool_gate.py` |
+| T8 (malformed output) | [`reports/schema.md`](../reports/schema.md) |
+| T9 (hallucinated facts and citations) | [`reports/grounding.md`](../reports/grounding.md) |
+| T11 (a guard breaking) | `tests/test_fail_closed.py` (every security guard, crash and hang) |
+| All, against a managed service | [`reports/baseline_bedrock_guardrails.md`](../reports/baseline_bedrock_guardrails.md) |

@@ -1,6 +1,6 @@
 [project]
 name = "llm-guardrails"
-version = "0.1.0"
+version = "1.0.0"
 description = "Layered guardrails for LLM apps: prompt-injection and Indian-ID PII screening, schema validation with retries, and grounding checks."
 readme = "README.md"
 requires-python = ">=3.12"

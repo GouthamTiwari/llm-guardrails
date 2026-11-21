@@ -183,7 +183,14 @@ def serve(
 
 
 @app.command()
-def spend() -> None:
+def spend(
+    write_report: Annotated[
+        bool,
+        typer.Option(
+            "--report", help="Also write reports/spend.json (totals by purpose, no text)."
+        ),
+    ] = False,
+) -> None:
     """Show live Bedrock spend recorded in the ledger against the budget."""
     from llm_guardrails.spend import SpendLedger
 
@@ -194,6 +201,14 @@ def spend() -> None:
     share = 100 * total / settings.live_budget_usd if settings.live_budget_usd else 0.0
     typer.echo(f"live spend: USD {total:.4f} of USD {settings.live_budget_usd:.2f} "
                f"({share:.1f}%) across {calls} recorded call(s)")  # fmt: skip
+    if write_report:
+        from llm_guardrails.eval import report
+        from llm_guardrails.eval.reports import write_json
+
+        write_json(
+            "spend.json", report.spend_report(ledger.entries(), settings.live_budget_usd), REPORTS
+        )
+        typer.echo("wrote reports/spend.json")
 
 
 # ----------------------------------------------------------------------------- corpus
