@@ -846,3 +846,8 @@ Training classifiers; toxicity/hate-speech moderation (future); image or audio g
     - (b) **No account id stored.** Recordings drop each response's `appliedGuardrailDetails`, whose ARN contains the AWS account id; a test keeps the committed recordings free of ARNs.
     - (c) **No managed equivalent.** Aadhaar, PAN, GSTIN, UPI ID and IFSC have no managed equivalent; they are listed, not scored as Bedrock misses.
     - (d) **Folder-relative.** The report and its README row are rebuilt offline from the recordings (`guardrails baseline bedrock` without `--live`).
+16. **2026-11-21: adapters (Task 22).**
+    - (a) **The wrapped function's inputs.** `@guarded` calls the wrapped function with the sanitised question and the cleaned, PII-redacted documents as `SourceDoc`s (its own prompt decides how to present them); the nonce-wrapped text stays available as `call.input_result.wrapped_context`.
+    - (b) **No answer without checks.** An exception or a non-string return from the wrapped function is a BLOCK (guard `upstream`), never an unchecked answer.
+    - (c) **`should_cache` is in the package.** It lives in `llm_guardrails.adapters` (not only in the example), so a real cache can import it. "Grounding did not pass" includes "no grounding verdict": an unverified answer is never cached, and a PII entity the policy lets through (GSTIN, IFSC) still blocks caching.
+    - (d) **Fake mode by default.** The examples set `GUARDRAILS_LLM_MODE=fake` unless the environment already chose a mode, so running one never calls AWS by accident.
