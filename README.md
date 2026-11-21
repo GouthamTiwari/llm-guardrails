@@ -1,5 +1,7 @@
 # LLM Guardrails & Output Validation
 
+[![CI](https://github.com/GouthamTiwari/llm-guardrails/actions/workflows/ci.yml/badge.svg)](https://github.com/GouthamTiwari/llm-guardrails/actions/workflows/ci.yml)
+
 Layered guardrails for LLM apps: prompt-injection and Indian-ID PII screening, JSON-schema validation with retries, and grounding checks that reject uncited answers. Python, Pydantic, Amazon Bedrock.
 
 **The model proposes, deterministic checks decide.** Every check sits at one of the two trust boundaries of an LLM app (what goes in, what comes out), returns an explicit verdict (`allow`, `redact`, `retry` or `block`), fails closed when it breaks, and is measured: the attack block rate is always reported next to the false-positive rate on normal users, with a 95% confidence interval and the counts.
@@ -82,9 +84,9 @@ Every number in this section is generated from the committed files in `reports/`
 | Latency, live sample of 30 requests: p50 / p95 end to end | 748 ms / 2743 ms | [e2e](reports/e2e.md) |
 | Amazon Bedrock Guardrails baseline | prompt attacks blocked 38.0% (29.1–47.8, 38/100) vs ours 95.0% (88.8–97.9, 95/100); normal messages blocked 10.8% (6.1–18.3, 11/102) vs ours 5.9% (2.7–12.2, 6/102); PII look-alike rows flagged 21.9% (13.5–33.4, 14/64) vs ours 0.0% (0.0–5.7, 0/64) | [baseline](reports/baseline_bedrock_guardrails.md) |
 
-All data is synthetic or licence-clean; labels are assistant-reviewed, human spot-check pending. Thresholds were tuned on the dev split only and the test split was evaluated once. Model calls recorded in these reports cost USD 0.4226; `guardrails eval --suite all` replays them offline for free.
+All data is synthetic or licence-clean; labels are machine-checked, human spot-check pending. Thresholds were tuned on the dev split only and the test split was evaluated once. Model calls recorded in these reports cost USD 0.4226; `guardrails eval --suite all` replays them offline for free.
 
-Total live AWS spend for the whole project (spend ledger, including dataset generation and tests): USD 0.6477 of a USD 5.00 cap, across 2196 calls.
+Total live AWS spend for the whole project (spend ledger, including dataset generation and tests): USD 0.6490 of a USD 5.00 cap, across 2203 calls.
 <!-- RESULTS:END -->
 
 How the numbers were made: every dataset has a dev and a test split. Thresholds (injection) and `min_overlap` (grounding) were chosen on dev only, with the objective written down before any result was seen; the test split was evaluated once. One dev row turned out to be mislabelled and one rule produced a false positive on dev; both were fixed before the test run, and how much that moved the dev result is recorded in [`docs/changelogs/19-eval-injection-pii.md`](docs/changelogs/19-eval-injection-pii.md). Each report in `reports/` has the full tables (per layer, per category, per language, confusion matrices, cost per guard).
@@ -142,6 +144,16 @@ Runnable examples, all in fake mode: [`examples/regulatory_rag_adapter.py`](exam
 All personal data is synthetic: identifiers are generated to pass (or, for look-alikes, fail) the real checks, emails use `example.com`, and UPI handles and bank codes are fictional. Sentences were written with Amazon Nova from hand-written seeds and validated by deterministic checks; a 10% sample is waiting for a human spot-check ([`docs/DATASET_REVIEW.md`](docs/DATASET_REVIEW.md)), and the results block says so until it is done.
 
 The external check uses the test split of [deepset/prompt-injections](https://huggingface.co/datasets/deepset/prompt-injections) (Apache-2.0), downloaded at evaluation time and not redistributed here.
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [`docs/SPEC.md`](docs/SPEC.md) | the design: every guard's exact behaviour, the evaluation method, and a numbered log of decisions made during the build |
+| [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) | assets, trust boundaries, threats, and where each one is measured |
+| [`docs/TASKS.md`](docs/TASKS.md) | the build plan, task by task |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md) and [`docs/changelogs/`](docs/changelogs/) | what each task changed, how it was verified, and what it cost |
+| [`reports/`](reports/) | every generated result, rebuilt by `guardrails eval --suite all` |
 
 ## Project layout
 

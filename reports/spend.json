@@ -1,6 +1,6 @@
 {
-  "total_usd": 0.6477,
-  "calls": 2196,
+  "total_usd": 0.649,
+  "calls": 2203,
   "budget_usd": 5.0,
   "by_purpose": {
     "dataset_generate": {
@@ -24,8 +24,8 @@
       "usd": 0.071993
     },
     "grounding_entailment": {
-      "calls": 32,
-      "usd": 0.00852
+      "calls": 37,
+      "usd": 0.0098
     },
     "answer": {
       "calls": 11,
@@ -43,13 +43,13 @@
       "calls": 305,
       "usd": 0.000219
     },
+    "live_test": {
+      "calls": 4,
+      "usd": 5.1e-05
+    },
     "context_embed": {
       "calls": 43,
       "usd": 4.2e-05
-    },
-    "live_test": {
-      "calls": 2,
-      "usd": 2.5e-05
     }
   }
 }

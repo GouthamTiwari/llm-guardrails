@@ -1,5 +1,5 @@
 # Task 21: Optional baseline, Amazon Bedrock Guardrails
-Branch: task/21-baseline-bedrock | Date: 2026-11-21 (run after Goutham's separate yes)
+Branch: task/21-baseline-bedrock | Date: 2026-11-21 (run after a separate cost approval)
 
 ## What changed
 - `src/llm_guardrails/eval/baseline_bedrock.py`:
@@ -46,7 +46,7 @@ Branch: task/21-baseline-bedrock | Date: 2026-11-21 (run after Goutham's separat
 - Full suite: 882 passed (3 live tests deselected).
 
 ## Live spend
-Separate yes from Goutham; estimate given as under USD 0.10.
+Separately approved; estimate given as under USD 0.10.
 - **Run 1:** 349 ApplyGuardrail calls, USD 0.0524.
 - **Run 2:** 147 calls, USD 0.0367.
 - **Task total USD 0.0891.** Project live spend is USD 0.6477 of the USD 5 cap.

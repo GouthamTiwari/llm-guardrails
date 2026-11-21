@@ -33,7 +33,7 @@ def _review_status(path: Path = REVIEW_DOC) -> str:
     m = re.search(r"Status: \*\*([^*]+)\*\*", text)
     status = m.group(1) if m else "pending"
     if status == "pending":
-        return "assistant-reviewed, human spot-check pending"
+        return "machine-checked, human spot-check pending"
     return f"human spot-check {status} (see docs/DATASET_REVIEW.md)"
 
 

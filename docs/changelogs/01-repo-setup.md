@@ -2,11 +2,11 @@
 Branch: main (first commit) | Date: 2026-11-19
 
 ## What changed
-- `.githooks/`, `.gitattributes`, `.claude/settings.json`: copied from the kit; owner email changed to the GitHub noreply address (spec decision 17.2). The kit's `.claude/agents/` was not copied because this project uses the single-session workflow.
+- `.githooks/`, `.gitattributes`: authorship hooks and line-ending rules; owner email set to the GitHub noreply address (spec 17.2).
 - `.gitignore`: kit list plus `_kit/`, `.spend/`, `.hypothesis/`.
 - `.env.example`: all settings from spec 2 with safe defaults and empty secrets. A local `.env` (ignored) was built by a script that copied only the Bedrock key from the Semantic Cache project and generated a random `LOG_HASH_SALT`; no value was printed.
 - `pyproject.toml`: package `llm-guardrails` / import `llm_guardrails`, Goutham Tiwari as the only author, dependencies from spec 2.1, ruff and pytest config (`live` marker deselected by default).
-- `LICENSE` (MIT, Goutham Tiwari), `README.md` skeleton with the results markers, `CLAUDE.md` (single-session rules).
+- `LICENSE` (MIT, Goutham Tiwari), `README.md` skeleton with the results markers.
 - `.github/workflows/ci.yml`: lint, tests, checksum self-test, authorship audit.
 - `data/seed/`: the kit's seed datasets and `make_seeds.py`. `tests/reference/reference_checksums.py`: the kit's tested checksum code, kept unchanged as the oracle for Task 04.
 - `docs/SPEC.md`, `docs/TASKS.md`, `docs/THREAT_MODEL.md`: the approved plan, including the decisions log (section 20).
@@ -24,7 +24,7 @@ Branch: main (first commit) | Date: 2026-11-19
 - `tests/test_smoke.py` (1 test).
 
 ## Out of scope / follow-ups
-- GitHub repo creation and first push wait for Goutham's yes.
+- GitHub repo creation and first push done after a review of the first commit.
 
 ## Self-review
 - No secrets staged (checked `git diff --cached` for key shapes). `.env` and `_kit/` confirmed ignored.

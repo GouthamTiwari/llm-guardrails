@@ -27,3 +27,4 @@ One line per merged task: date, task, summary. Details live in `docs/changelogs/
 - 2026-11-21 · 21 baseline-bedrock · temporary Bedrock guardrail created, applied to test sets and deleted (verified); Bedrock 38% attacks blocked at 10.8% FP vs ours 95%/5.9%, PII look-alikes flagged 14/64 vs ours 0/64; no managed Indian ID types; live USD 0.0891 (decision 15).
 - 2026-11-21 · 22 adapters · @guarded for sync/async RAG functions (fails closed on upstream errors), should_cache (no PII, redaction, block or unverified answer), protocols, and three fake-mode examples (decision 16).
 - 2026-11-21 · 23 release · README with quickstart, diagram, threat table, generated results (incl. whole-project spend from reports/spend.json), limits and design decisions; threat model linked to reports; version 1.0.0.
+- 2026-11-21 · cleanup · local tool settings out of version control, docs reworded, generic authorship hooks, CI badge and docs map; live tests pass (USD 0.0013).

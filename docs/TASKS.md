@@ -1,25 +1,25 @@
 # Tasks
 
-Build order for `docs/SPEC.md`. One task at a time, in this order, on branch `task/NN-slug`, following `CLAUDE.md`. Each task lists the files it creates or edits; touching anything else needs a line in its changelog saying why. "Spec" references point to sections of `docs/SPEC.md`.
+Build order for `docs/SPEC.md`. One task at a time, in this order, on branch `task/NN-slug`. Each task lists the files it creates or edits; touching anything else needs a line in its changelog saying why. "Spec" references point to sections of `docs/SPEC.md`.
 
 Every task's acceptance criteria implicitly include: `uv run ruff check .`, `uv run ruff format --check .` and `uv run pytest` pass; no network calls in unit tests; changelog written; no raw PII or secrets committed.
 
-## Before Task 01 (Goutham, about 5 minutes)
+## Before Task 01 (setup, about 5 minutes)
 
 Nothing new is needed in the AWS console: Bedrock (Nova 2 Lite + Titan v2 in `ap-south-1`) already works from this PC for the other two projects, and the same API key is reused.
 
 1. Confirm the AWS budget alarm (USD 10, alerts at 50% and 80%) still exists: Billing → Budgets.
-2. Say yes when Task 01 asks to create the private GitHub repo `GouthamTiwari/llm-guardrails` (or create it yourself on github.com/new with nothing ticked).
+2. Create the private GitHub repo `GouthamTiwari/llm-guardrails` (Task 01 can do it with `gh`).
 
 ---
 
 ## 01 · Repo setup
-**Files:** `.gitignore`, `.gitattributes`, `.githooks/*`, `.claude/settings.json`, `.env.example`, `.env` (local only), `pyproject.toml`, `uv.lock`, `LICENSE`, `README.md`, `CLAUDE.md`, `docs/CHANGELOG.md`, `docs/changelogs/01-repo-setup.md`, `.github/workflows/ci.yml`, `src/llm_guardrails/__init__.py`, `tests/test_smoke.py`, `tests/reference/reference_checksums.py`, `data/seed/*.jsonl`, `data/seed/make_seeds.py`
+**Files:** `.gitignore`, `.gitattributes`, `.githooks/*`, `.env.example`, `.env` (local only), `pyproject.toml`, `uv.lock`, `LICENSE`, `README.md`, `docs/CHANGELOG.md`, `docs/changelogs/01-repo-setup.md`, `.github/workflows/ci.yml`, `src/llm_guardrails/__init__.py`, `tests/test_smoke.py`, `tests/reference/reference_checksums.py`, `data/seed/*.jsonl`, `data/seed/make_seeds.py`
 **Depends on:** –
 **Why:** a safe, reproducible base: identity and hooks from the first commit, secrets ignored before any exist.
 **Steps and acceptance:**
 - [ ] `git init -b main`; `git config user.name "Goutham Tiwari"`, `git config user.email "227244284+GouthamTiwari@users.noreply.github.com"`, `git config core.hooksPath .githooks` (explain each in one line).
-- [ ] Copy `.githooks/`, `.gitattributes`, `.claude/settings.json` from `_kit/llm-guardrails-kit/`; change `OWNER_EMAIL` in `_check.sh` and the email in `settings.json` to the noreply address. Do **not** copy `.claude/agents/` (single-session workflow).
+- [ ] Add `.githooks/` and `.gitattributes`; set `OWNER_EMAIL` in `_check.sh` to the noreply address.
 - [ ] `.gitignore` = kit's list + `_kit/`, `.spend/`, `data/raw/`, `.embed_cache/`, `reports/tmp/`, `.env`.
 - [ ] `.env.example` with: `AWS_REGION=ap-south-1`, `AWS_BEARER_TOKEN_BEDROCK=`, `AWS_ACCESS_KEY_ID=`, `AWS_SECRET_ACCESS_KEY=`, `BEDROCK_CHAT_MODEL_ID=global.amazon.nova-2-lite-v1:0`, `BEDROCK_JUDGE_MODEL_ID=global.amazon.nova-2-lite-v1:0`, `BEDROCK_EMBED_MODEL_ID=amazon.titan-embed-text-v2:0`, `EMBED_DIMENSIONS=1024`, `EMBED_REQUESTS_PER_SECOND=1`, `GUARDRAILS_LLM_MODE=replay`, `LIVE_BUDGET_USD=5`, `LOG_HASH_SALT=`.
 - [ ] Create local `.env` from `.env.example`, copying the `AWS_BEARER_TOKEN_BEDROCK` value from `..\semantic-cache\.env` with a script that **never prints it**; generate a random `LOG_HASH_SALT`.
@@ -29,7 +29,7 @@ Nothing new is needed in the AWS console: Bedrock (Nova 2 Lite + Titan v2 in `ap
 - [ ] CI (`ubuntu-latest`, Python 3.12 via `astral-sh/setup-uv`): `uv sync`, ruff check, ruff format --check, pytest; job 2 runs `bash .githooks/audit-authors.sh` with `fetch-depth: 0`.
 - [ ] `tests/test_smoke.py`: package imports and exposes `__version__`.
 - [ ] First commit; `git log --format=fuller` shows author and committer Goutham Tiwari with no trailer; audit prints OK.
-- [ ] Ask Goutham, then `gh repo create GouthamTiwari/llm-guardrails --private --source . --remote origin`; push.
+- [ ] `gh repo create GouthamTiwari/llm-guardrails --private --source . --remote origin`; push.
 
 ## 02 · Core types, guard runner, settings, policy
 **Files:** `src/llm_guardrails/types.py`, `guards/__init__.py`, `guards/base.py`, `settings.py`, `policy_config.py`, `policies/default.yaml`, `policies/banking_tax.yaml`, `tests/test_types.py`, `tests/test_guard_runner.py`, `tests/test_policy_config.py`
@@ -231,4 +231,4 @@ Nothing new is needed in the AWS console: Bedrock (Nova 2 Lite + Titan v2 in `ap
 **Acceptance:**
 - [ ] README: pitch ("the model proposes, deterministic checks decide"), Mermaid diagram of spec 3, 3-command quickstart (`uv sync`, `uv run guardrails check "..."`, `uv run guardrails eval --suite all`), threat model table, results block from `reports/`, "what still gets through" excerpt, design decisions (spec 17 items in plain words), "what this does not do" (spec 18), Nova-vs-Haiku note, honest dataset-review status, cost of the whole project from the ledger.
 - [ ] Every number in the README is inside the generated block or quoted from a `reports/` file (checked by hand and by `test_reports.py`).
-- [ ] CI green on GitHub; secret scan of full history (`git log -p | grep -E 'AKIA|ASIA|BEGIN .*PRIVATE KEY|AWS_BEARER_TOKEN_BEDROCK=.+'` → nothing); audit OK; tag `v1.0.0`; then tell Goutham the repo is ready to make public.
+- [ ] CI green on GitHub; secret scan of full history (`git log -p | grep -E 'AKIA|ASIA|BEGIN .*PRIVATE KEY|AWS_BEARER_TOKEN_BEDROCK=.+'` → nothing); audit OK; tag `v1.0.0`; then the repo is ready to make public.

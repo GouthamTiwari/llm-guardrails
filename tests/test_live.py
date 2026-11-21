@@ -66,7 +66,12 @@ async def test_live_entailment_judge(settings) -> None:
     ledger = SpendLedger(limit_usd=settings.live_budget_usd)
     llm = BedrockLLM(settings, ledger=ledger)
     result = await check_grounding_async(
-        answer, [source], mode="strip", entailment="required", llm=llm
+        answer,
+        [source],
+        mode="strip",
+        entailment="required",
+        llm=llm,
+        min_overlap=0.5,  # all three must reach the judge; this test is about the judge
     )
     labels = [s.entailment for s in result.sentences]
     print("judge labels:", labels, "cost:", round(result.cost_usd, 6))

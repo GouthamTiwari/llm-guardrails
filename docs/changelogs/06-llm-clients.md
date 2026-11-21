@@ -10,7 +10,7 @@ Branch: task/06-llm-clients | Date: 2026-11-19
 
 ## How to verify
 - `uv run pytest -q` → 180 passed, 2 deselected
-- `uv run pytest -m live -q` → 2 passed (real Bedrock; approved by Goutham)
+- `uv run pytest -m live -q` → 2 passed (real Bedrock; cost approved first)
 
 ## Tests
 - `tests/test_pricing.py` (5), `tests/test_spend.py` (4, including 200 concurrent records), `tests/test_llm.py` (10, boto3 `Stubber` checks the exact Converse request shape, cost, ledger, empty system prompt, `max_tokens` stop reason, budget refusal before any AWS call, auth modes, repr hiding, fake model, record → replay, missing replay, key sensitivity), `tests/test_embeddings.py` (7, exact InvokeModel body, normalisation, memo prevents a second call, budget refusal, pacer spacing, fake determinism, bundle round trip and model/size isolation).

@@ -64,7 +64,7 @@ Only 5 inputs needed a retry, at about 3.2 s each. All 20 empty, hostile and off
 - Full suite: 870 passed (3 live tests deselected).
 
 ## Live spend
-Approved by Goutham (estimate about USD 0.21, at most USD 0.45).
+Cost approved first (estimate about USD 0.21, at most USD 0.45).
 - **Schema experiment:** 215 Nova calls, USD 0.1322.
 - **Grounding judge:** 29 calls, USD 0.0077.
 - **End-to-end parts:** USD 0.0351 (classifier calls not already recorded, plus Titan).

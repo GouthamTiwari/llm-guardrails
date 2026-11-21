@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rejects commit messages with Co-Authored-By / Claude attribution lines.
+# Rejects commit messages with co-author or generator lines.
 . "$(dirname "$0")/_check.sh"
 msg=$(cat "$1")
 check_message_text "$msg" || {

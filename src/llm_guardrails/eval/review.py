@@ -2,7 +2,7 @@
 
 1. `guardrails dataset review-sample --suite all --frac 0.10 --seed 7` writes
    `data/review/review_sample.csv`: id, suite, text, label, and an empty `verdict` column.
-2. Goutham fills `verdict` with `ok`, `edit:<new label>` or `drop`.
+2. A reviewer fills `verdict` with `ok`, `edit:<new label>` or `drop`.
 3. `guardrails dataset apply-review` applies it to the datasets and records the counts in
    `docs/DATASET_REVIEW.md`.
 
@@ -154,7 +154,8 @@ def review_doc(status: str, sampled: int, outcome: ReviewOutcome | None = None) 
         "",
         f"Status: **{status}** (updated {date.today().isoformat()}).",
         "",
-        "All rows were generated or written with an AI assistant and checked by deterministic "
+        "All rows were written with Amazon Nova from hand-written seeds (PII values are synthetic "
+        "and filled in by code) and checked by deterministic "
         "validators (`guardrails dataset validate`, `guardrails dataset leakcheck`). A random "
         f"10% sample ({sampled} rows, seed 7) is in `data/review/review_sample.csv` for a human "
         "spot-check.",
@@ -164,7 +165,7 @@ def review_doc(status: str, sampled: int, outcome: ReviewOutcome | None = None) 
         "",
     ]
     if outcome is None:
-        lines += ["Until the spot-check is done, the README says: \"assistant-reviewed, human "
+        lines += ["Until the spot-check is done, the README says: \"machine-checked, human "
                   "spot-check pending\"."]  # fmt: skip
     else:
         c = outcome.counts

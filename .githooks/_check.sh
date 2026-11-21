@@ -1,18 +1,18 @@
 #!/bin/sh
-# Shared checks for authorship (CLAUDE.md Rule 0). Sourced by the other hooks.
+# Shared authorship checks, sourced by the other hooks.
 # Only author and committer allowed: Goutham Tiwari <227244284+GouthamTiwari@users.noreply.github.com>
 
 OWNER_NAME="Goutham Tiwari"
 OWNER_EMAIL="227244284+GouthamTiwari@users.noreply.github.com"
 
 # Lines that must never appear in a commit message.
-FORBIDDEN_MSG='^co-authored-by:|^claude-session:|generated with \[?claude|claude\.ai/code|noreply@anthropic\.com|^🤖'
+FORBIDDEN_MSG='^co-authored-by:|^generated with'
 
 # Checks a message file or stdin text. Prints the offending lines, returns 1 if any.
 check_message_text() {
   bad=$(printf '%s\n' "$1" | grep -iE "$FORBIDDEN_MSG")
   if [ -n "$bad" ]; then
-    echo "Blocked: commit message has an attribution line (CLAUDE.md Rule 0):" >&2
+    echo "Blocked: commit message has a co-author or generator line:" >&2
     printf '%s\n' "$bad" >&2
     return 1
   fi

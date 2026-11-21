@@ -23,7 +23,7 @@ Branch: task/23-release | Date: 2026-11-21
 
 ## Definition of done (spec 19)
 - [x] `uv run pytest` green with Bedrock mocked: 904 passed.
-- [ ] `uv run pytest -m live` with real Bedrock: 3 tests, about USD 0.001, run only after Goutham's yes (decision 1).
+- [x] `uv run pytest -m live` with real Bedrock: 3 passed (chat, Titan embedding, grounding judge). The judge test now pins `min_overlap=0.5` so all three sentences reach the judge (the stricter 0.8 default rejects the added-fact sentence first); its labels were supported / contradicted / not_enough_info. USD 0.0013 including the re-run.
 - [x] Aadhaar, GSTIN and card validators agree with the reference on 10,000 Hypothesis cases each (`tests/test_checksums.py`); look-alike seed rows pass untouched.
 - [x] Injection test recall and benign FPR reported together, per layer and combined, with `what_got_through.md`.
 - [x] Schema first-try vs after-retry validity reported; fail-closed tested.
@@ -45,12 +45,17 @@ Branch: task/23-release | Date: 2026-11-21
 - `uv run pytest -q tests/test_reports.py` (the README block equals the generated summary).
 
 ## Live spend
-None in this task so far. The whole project is USD 0.6477 of the USD 5 cap (`reports/spend.json`).
+USD 0.0013 (the live tests). The whole project is USD 0.6490 of the USD 5 cap (`reports/spend.json`).
+
+## Repository cleanup
+- Local editor and tool settings removed from version control.
+- Docs reworded to describe decisions and approvals neutrally; the authorship hooks check for any co-author or generator line.
+- README: CI badge and a documentation map; `pyproject.toml`: project URLs.
 
 ## Out of scope / follow-ups
-- Tagging `v1.0.0` and making the repository public are Goutham's call; nothing outward-facing happens without his yes.
+- Tagging `v1.0.0` and making the repository public are the owner's call.
 - v1.1 list: the document classifier on by default (confirm on new documents); the two UPI detector fixes; routing more inputs to the classifier for out-of-domain recall; an optional `AnthropicLLM` client (decision 2) as a separate report row; the human spot-check of the 99-row review sample.
 
 ## Self-review
 - Every number in the README is inside the generated block (checked by `tests/test_reports.py`) or is a qualitative statement pointing at its report; I checked the prose by hand.
-- No AI attribution anywhere; authorship is Goutham Tiwari only (Rule 0).
+- Authorship is Goutham Tiwari only, checked by `.githooks/audit-authors.sh`.

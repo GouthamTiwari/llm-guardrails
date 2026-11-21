@@ -14,6 +14,6 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   check_range $range || status=1
 done
 if [ "$status" -ne 0 ]; then
-  echo "Push blocked. Fix authorship (see CLAUDE.md Rule 0), then push again." >&2
+  echo "Push blocked. Fix the commit author or remove co-author lines, then push again." >&2
   exit 1
 fi

@@ -18,6 +18,10 @@ dependencies = [
     "typer>=0.15",
 ]
 
+[project.urls]
+Repository = "https://github.com/GouthamTiwari/llm-guardrails"
+Documentation = "https://github.com/GouthamTiwari/llm-guardrails/blob/main/docs/SPEC.md"
+
 [project.scripts]
 guardrails = "llm_guardrails.cli:app"
 

@@ -49,7 +49,7 @@ Branch: task/18-datasets | Date: 2026-11-19
 - Full suite: 822 passed (3 live tests deselected).
 
 ## Live spend
-Approved by Goutham before running; estimate given as about USD 0.20, at most USD 0.48.
+Cost approved before running; estimate given as about USD 0.20, at most USD 0.48.
 - **Nova:** 90 calls, USD 0.1745.
   - Injection: 33 calls (26 in round 1, 7 top-up).
   - PII: 20 calls (19, plus one re-ask after malformed JSON).
@@ -64,7 +64,7 @@ Approved by Goutham before running; estimate given as about USD 0.20, at most US
 - Only 3 of 407 injection rows had to stay in dev for resembling the corpus, which is evidence that the generated test split really is new to layer 2.
 
 ## Out of scope / follow-ups
-- **Your spot-check:** fill `verdict` in `data/review/review_sample.csv` (99 rows), then run `guardrails dataset apply-review`. Until then the README says "assistant-reviewed, human spot-check pending".
+- **Human spot-check:** fill `verdict` in `data/review/review_sample.csv` (99 rows), then run `guardrails dataset apply-review`. Until then the README says "machine-checked, human spot-check pending".
 - Task 19 uses `data/injection_vectors.*` for the layer-2 eval and must call `ensure_complete()` after replay runs (decision 8d).
 - The external deepset test split is downloaded at eval time (Task 19), not committed.
 

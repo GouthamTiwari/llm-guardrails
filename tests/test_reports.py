@@ -1,4 +1,4 @@
-"""The numbers rule, enforced by CI (docs/SPEC.md 13.7; CLAUDE.md "Numbers rule").
+"""The numbers rule, enforced by CI (docs/SPEC.md 13.7).
 
 Every number in the README results block must come from the committed report files:
 summary.md is regenerated here from reports/*.json and compared with the committed copy,

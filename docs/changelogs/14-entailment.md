@@ -37,7 +37,7 @@ Branch: task/14-entailment | Date: 2026-11-19
 - Full suite: 567 passed (3 live tests deselected).
 
 ## Live spend
-- 2026-11-19, after the merge, with Goutham's yes: `uv run pytest -m live tests/test_live.py -k entailment` → 1 passed. Nova labelled the three sentences **supported / contradicted / not_enough_info**, exactly as intended (faithful, changed condition, added fact). Cost USD 0.000775 (3 calls, no retries). Project live spend now USD 0.0732 of the USD 5 cap.
+- 2026-11-19, after the merge, once the cost was approved: `uv run pytest -m live tests/test_live.py -k entailment` → 1 passed. Nova labelled the three sentences **supported / contradicted / not_enough_info**, exactly as intended (faithful, changed condition, added fact). Cost USD 0.000775 (3 calls, no retries). Project live spend now USD 0.0732 of the USD 5 cap.
 - This is a smoke test of the prompt and the JSON contract, not a result: the judge's real value is measured on the grounding dataset in Task 20.
 
 ## Out of scope / follow-ups
